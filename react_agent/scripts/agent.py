@@ -32,7 +32,7 @@ class Server:
         # "Store" the message received.
         # TODO: Check what kind of format the data becomes in python.
         self.distances = msg
-        print("Terraranger array messages:", msg)
+        print("Terraranger array messages:", msg.ranges)
 
         # Compute stuff.
         self.compute_stuff()

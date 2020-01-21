@@ -3,6 +3,8 @@ import sys
 import numpy as np
 import cv2
 import pyttsx3
+import rospy
+from sensor_msgs.msg import Image
 sys.path.append('project-posenet/')
 from pose_engine import PoseEngine
 from argparse import ArgumentParser
@@ -151,12 +153,18 @@ def main(args):
 				cv2.imshow('Camera', frame)
 				if cv2.waitKey(1) & 0xFF == ord('q'):
 					break
+def test(image):
+	print('wohooooo')
 
-#def ros_run():
-#	rospy.init_node('human_distance', anonymous=True)
-#	sub = rospy.Subscriber('human_distance', )
+def ros_run():
+	rospy.init_node('human_distance', anonymous=True)
+	sub = rospy.Subscriber('human_distance', Image, test)
+	print('sub')
+	rospy.spin()
 
 if __name__ == "__main__":
+	ros_run()
+	"""
 	parser = ArgumentParser(description="Human depth estimation tool", prog="hde")
 	parser.add_argument("--ids", dest="ids", action="store_true", default=False,
 			help="Uses the ids camera")
@@ -173,4 +181,5 @@ if __name__ == "__main__":
 	parser.add_argument("--th", dest="threshold", type=float, default=0.6,
 			help="Set the threshold for the model points. Default: 0.6")
 	args = parser.parse_args()
-	main(args)	
+	main(args)
+	"""
