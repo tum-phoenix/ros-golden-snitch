@@ -7,7 +7,8 @@ import rospy
 from std_msgs.msg import Float64MultiArray
 from teraranger_array.msg import RangeArray
 from human_info.msg import HumanPos
-import decision_tree
+from decision_tree import Decision_tree
+from geometry_msgs.msg import PoseStamped
 
 
 class Server:
@@ -16,9 +17,9 @@ class Server:
         self.human_dist = None
         self.distances = []
 
-        self.ai = decision_tree.Decision_tree()
+        self.ai = Decision_tree()
 
-        #TODO: Make publisher here
+        self.pub = rospy.Publisher('/setpoint_position/local', PoseStamped, queue_size=1) # Should be the one mavros wants, but we don't know if Ardupilot will accept it.
 
     def orientation_callback(self, msg):
         # "Store" message received.
@@ -39,11 +40,13 @@ class Server:
     def compute_stuff(self):
         if self.orientation is not None and self.velocity is not None:
             res = self.ai.update()
+            # TODO: Convert res to the correct fromat for the ROS message
+            self.pub.publish(res)
 
 
 
 if __name__ == '__main__':
-    rospy.init_node('listener')
+    rospy.init_node('decicion_maker')
 
     server = Server()
 
