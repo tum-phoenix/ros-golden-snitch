@@ -23,25 +23,21 @@ class Server:
 
         self.pub = rospy.Publisher('mavros/setpoint_position/local', PoseStamped, queue_size=1) # Should be the one mavros wants, but we don't know if Ardupilot will accept it.
 
-    def orientation_callback(self, msg):
-        # "Store" message received.
-        self.orientation = msg
+    def human_tracking_callback(self, msg):
+        self.human_dist = msg.distance
+        self.human_dir = msg.angle
 
-        # Compute stuff.
-        self.compute_stuff()
+        self.generate_setpiont()
 
     def ranges_callback(self, msg):
-        # "Store" the message received.
-        # TODO: Check what kind of format the data becomes in python.
         ranges = map(lambda x: x.range, msg.ranges)
         self.distances = ranges
         print("Terraranger array messages:", ranges)
 
-        # Compute stuff.
-        self.compute_stuff()
+        self.generate_setpiont()
 
-    def compute_stuff(self):
-        if self.human_dir is not None and len(self.distances) !=0:
+    def generate_setpiont(self):
+        if self.human_dir is not None and len(self.distances) != 0:
             new_setpoint = self.ai.update(self.distances, self.human_dir, self.human_dist)
             res = _convert_to_mavros_message(new_setpoint)
             self.pub.publish(res)
@@ -59,13 +55,12 @@ def _convert_to_mavros_message(setpoint):
     return res
 
 
-
 if __name__ == '__main__':
     rospy.init_node('decicion_maker')
 
     server = Server()
 
-    rospy.Subscriber('/human_info/human_info', Float64MultiArray, server.orientation_callback)
+    rospy.Subscriber('/human_info/human_info', HumanPos, server.human_tracking_callback)
     rospy.Subscriber('/multiflex_1/ranges_raw', RangeArray, server.ranges_callback)
 
     rospy.spin()
