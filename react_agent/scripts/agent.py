@@ -31,7 +31,7 @@ class Server:
     def ranges_callback(self, msg):
         # "Store" the message received.
         # TODO: Check what kind of format the data becomes in python.
-        ranges = map(lambda x: x["range"], msg.ranges)
+        ranges = map(lambda x: x.range, msg.ranges)
         self.distances = msg
         print("Terraranger array messages:", ranges)
 
