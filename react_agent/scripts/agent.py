@@ -38,7 +38,7 @@ class Server:
         self.compute_stuff()
 
     def compute_stuff(self):
-        if self.orientation is not None and self.velocity is not None:
+        if self.human_dir is not None and len(self.distances) !=0:
             res = self.ai.update()
             # TODO: Convert res to the correct fromat for the ROS message
             self.pub.publish(res)
