@@ -154,12 +154,11 @@ def main(args):
 				if cv2.waitKey(1) & 0xFF == ord('q'):
 					break
 def test(image):
-	print('wohooooo')
+	print(type(image))
 
 def ros_run():
 	rospy.init_node('human_distance', anonymous=True)
-	sub = rospy.Subscriber('human_distance', Image, test)
-	print('sub')
+	sub = rospy.Subscriber('/camera/image_raw', Image, test)
 	rospy.spin()
 
 if __name__ == "__main__":
