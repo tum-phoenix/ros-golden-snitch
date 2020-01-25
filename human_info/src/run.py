@@ -1,23 +1,19 @@
 #!/usr/bin/python3
+"""
+Script for processing the camera frames.
+Calcualtes the distance and the player position for each frame.
+The communication with other system components is organised via ros.
+"""
 import sys
 import numpy as np
 import cv2
-import pyttsx3
-try:
-	# debug: check if checking script and no ros is installed
-	import rospy
-	from sensor_msgs.msg import Image
-except:
-	pass
-
+import rospy
+from sensor_msgs.msg import Image
 sys.path.append('project-posenet/')
 from pose_engine import PoseEngine
-from argparse import ArgumentParser
-from utils.camera_utils import *
-
 from config import *
 
-def pos_from_center(poses, threshold, shape):
+def pos_from_center(poses, shape):
 	"""
 	In progress
 	Calculate the avg of the pose and returns the angle of the human related 
@@ -27,7 +23,7 @@ def pos_from_center(poses, threshold, shape):
 	y, x = np.array(shape)/2
 	center = np.array([x,y])
 	for pose in poses:
-		points = [point.yx for point in pose.keypoints.values() if point.score > threshold]
+		points = [point.yx for point in pose.keypoints.values() if point.score > THRESHOLD]
 		if points:
 			pose_avg = sum(points)/len(points)
 			avg.append(pose_avg)
@@ -39,7 +35,7 @@ def pos_from_center(poses, threshold, shape):
 		vertical_angle = np.arctan(y/FOCAL_LENGTH)
 		return center.astype('int'), avg.astype('int'), horizontal_angle, vertical_angle
 
-def cal_distance(poses, threshold):
+def cal_distance(poses):
 	"""
 	Calculates the distance to the player based on the predicted poses
 
@@ -55,7 +51,7 @@ def cal_distance(poses, threshold):
 			for f_name_1, f_name_2, dis in FEATURES:
 				keypoint_1 = keypoints[f_name_1]
 				keypoint_2 = keypoints[f_name_2]
-				if keypoint_1.score > threshold and keypoint_2.score > threshold:
+				if keypoint_1.score > threshold and keypoint_2.score > THRESHOLD:
 					# quality sufficient -> use keypoints
 					pix_distance = np.linalg.norm(keypoint_1.yx - keypoint_2.yx, ord=1)
 					distance = dis * FOCAL_LENGTH / pix_distance
@@ -71,7 +67,7 @@ def cal_distance(poses, threshold):
 			return distance
 	return None
 
-def add_pose(poses, frame, threshold):
+def add_pose(poses, frame):
 	"""
 	Draws the predicted feature points on the frame. Further, it draws lines between the 
 	feature points it uses for prediction.
@@ -83,7 +79,7 @@ def add_pose(poses, frame, threshold):
 	for pose in poses:
 		keypoints = pose.keypoints
 		for name in keypoints:
-			if keypoints[name].score > threshold:
+			if keypoints[name].score > THRESHOLD:
 				y, x = tuple(keypoints[name].yx)
 				frame = cv2.circle(frame, (x,y), 2, (255, 0, 0), 2)
 				#frame[int(position[0])-1][int(position[1])-1] = 255
@@ -96,102 +92,58 @@ def add_pose(poses, frame, threshold):
 				frame = cv2.line(frame, (x1, y1), (x2, y2), (255, 0, 0), 2)
 	return frame
 
-def main(args):
+def add_centroids(frame, center, avg):
+	"""
+	Draws the image center and the pose center on the frame
 
-	# Const
-	THRESHOLD = args.threshold
-	SHOW = args.show
-	ACC = args.accuracy if args.accuracy > 0 else None
-	MAX_AVG = args.smooth
-	PRINT_DELAY = args.frames
-	if MAX_AVG < 0 or PRINT_DELAY < 0:
-		raise ValueError('Either SMOOTH or FRAMES is smaller than 0')
+	@param frame the camera frame
+	@param center image center
+	@param avg center of the pose
+	"""
+	frame = cv2.circle(frame, tuple(center), 10, (0, 255, 0), 2)
+	frame = cv2.circle(frame, tuple(avg), 10, (0, 0, 255), 2)
+	return frame
 
-	# TODO consider to use model with a higher resolution
-	# increases maximum distance of the prediction
-	# increases power consumption
-	# might reduce fps 
-	print('Load model ...')
+def process_frame(frame):
+	"""
+	Calculatest he distance and position of the player and the detected human features
 
-	speak_engine = pyttsx3.init()
+	@param frame The camera frame
+	@return (distance, (frame center, pose average, horizontal_angle, vertical_angle), poses)
+	"""
+	pil_image = cv2.resize(frame, (640, 480))
 
-	engine = PoseEngine('project-posenet/models/posenet_mobilenet_v1_075_481_641_quant_decoder_edgetpu.tflite')
-	said = False
-	if args.ids is True:
-		stream = IDSCamera
-	else:
-		stream = CVCamera
-	print('Starte video stream')
-	with stream(args.camera) as st:
-		dis_history = []
-		print_count = 0
-		# TODO implement nice keyboard interupt
-		while(True):
-			frame = st.read()
+	# prediction
+	poses, inference_time = ENGINE.DetectPosesInImage(np.uint8(pil_image))
 
-			pil_image = cv2.resize(frame, (640, 480))
-			# prediction
-			poses, inference_time = engine.DetectPosesInImage(np.uint8(pil_image))
+	distance = cal_distance(poses)
+	position = pos_from_center(poses, pil_image.shape[:-1])
+	return distance, position, poses
 
-			distance = cal_distance(poses, THRESHOLD)
-			position = pos_from_center(poses, THRESHOLD, pil_image.shape[:-1])
-			if position:
-				center, avg, h_angle, v_angle = position
-				pil_image = cv2.circle(pil_image, tuple(center), 10, (0, 255, 0), 2)
-				pil_image = cv2.circle(pil_image, tuple(avg), 10, (0, 0, 255), 2)
-			if distance is None:
-				distance = 'UNKOWN'
-			else:
-				dis_history.append(distance)
-				if len(dis_history) > MAX_AVG:
-					dis_history.pop(0)				
-				#TODO sliding window alg + alternative smoothing ???
-				distance = sum(dis_history)/len(dis_history)
-				if ACC is not None:
-					distance = round(distance, ACC)
-			if print_count >= PRINT_DELAY and type(distance) is not str:
-				print_count = 0
-				if not said and distance < MAX:
-					speak_engine.say("Stop")
-					speak_engine.runAndWait()
-					said = True
-				elif distance > MAX:
-					said = False
-				print(f'Distance to human: {distance}; Position of Human: {h_angle}, {v_angle}', end='\r')
-			else:
-				print_count += 1
-			sys.stdout.write(ERASE_LINE)
-			if SHOW is True:
-				frame = add_pose(poses, pil_image, THRESHOLD)
-				cv2.imshow('Camera', frame)
-				if cv2.waitKey(1) & 0xFF == ord('q'):
-					break
-def test(image):
-	print(type(image))
+def ros_callback(frame):
+	"""
+	Starts the frame processing and publishes on the channel
+	
+	@param frame The camera frame
+	"""
+	frame = BRIDGE.imgmsg_to_cv2(frame, "bgr8")
+	distance, position, poses = process_frame(frame)
+	center, avg, h_angle, v_angle = position
+	frame = add_pose(poses, frame)
+	frame = add_centroids(frame, center, avg)
+	# TODO publish on channel
+	cv2.imshow('CAM',frame)
+	cv2.waitKey(0)	
+	print(f'Pub: {distance}, {h_angle}, {v_angle}')
+
 
 def ros_run():
+	"""
+	Subscribs to the camera channel and starts the frame processing loop
+	"""
 	rospy.init_node('human_distance', anonymous=True)
-	sub = rospy.Subscriber('/camera/image_raw', Image, test)
+	sub = rospy.Subscriber('/camera/image_raw', Image, ros_callback)
 	rospy.spin()
 
 if __name__ == "__main__":
-	if False: # debug
-		ros_run()
-	else:
-		parser = ArgumentParser(description="Human depth estimation tool", prog="hde")
-		parser.add_argument("--ids", dest="ids", action="store_true", default=False,
-				help="Uses the ids camera")
-		parser.add_argument("--sm", dest="smooth", type=int, default=10,
-				help="Sets the max averaging frame. Default: 10")
-		parser.add_argument("--acc", dest="accuracy", type=int, default=0,
-				help="Sets the accuracy of the output. Uses max accuracy if value is smaller equal 0")
-		parser.add_argument("--pf", dest="frames", type=int, default=0,
-				help="Sets the amount of frames between each print output")
-		parser.add_argument("--show", dest="show", action="store_true",
-				help="Show camera stream")
-		parser.add_argument("--cam", dest="camera", type=int, default=0,
-				help="Sets the camera. Default: 0")
-		parser.add_argument("--th", dest="threshold", type=float, default=0.6,
-				help="Set the threshold for the model points. Default: 0.6")
-		args = parser.parse_args()
-		main(args)
+	ros_run()

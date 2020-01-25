@@ -1,4 +1,6 @@
 import numpy as np
+from cv_bridge import CvBridge
+
 ERASE_LINE = '\x1b[2K'
 
 # possible FEATURES
@@ -25,8 +27,6 @@ MAX = 2
 #FOCAL_LENGTH = 6.6761817924503907e+02 #616.728321429  
 FOCAL_LENGTH = 7.395847924773853e+02/2.3 #4.533079645790183e+02
 
+ENGINE = PoseEngine('project-posenet/models/posenet_mobilenet_v1_075_481_641_quant_decoder_edgetpu.tflite')
 
-CAMERA_CENTER = np.array([
-	6.2399311597864607e+02,
-	5.2567120520712524e+02
-])
+BRIDGE = CvBridge()
