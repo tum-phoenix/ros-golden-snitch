@@ -3,8 +3,13 @@ import sys
 import numpy as np
 import cv2
 import pyttsx3
-import rospy
-from sensor_msgs.msg import Image
+try:
+	# debug: check if checking script and no ros is installed
+	import rospy
+	from sensor_msgs.msg import Image
+except:
+	pass
+
 sys.path.append('project-posenet/')
 from pose_engine import PoseEngine
 from argparse import ArgumentParser
@@ -19,15 +24,20 @@ def pos_from_center(poses, threshold, shape):
 	to the camera 
 	"""
 	avg = []
+	y, x = np.array(shape)/2
+	center = np.array([x,y])
 	for pose in poses:
 		points = [point.yx for point in pose.keypoints.values() if point.score > threshold]
 		if points:
 			pose_avg = sum(points)/len(points)
 			avg.append(pose_avg)
 	if avg:
-		avg = sum(avg)/len(avg)
-		difference = (np.array(shape)/2 - avg) * np.array([1,-1])
-		return difference
+		y, x = sum(avg)/len(avg)
+		avg = np.array([x,y])
+		x, y = (center - avg) * np.array([-1,1])
+		horizontal_angle = np.arctan(x/FOCAL_LENGTH)
+		vertical_angle = np.arctan(y/FOCAL_LENGTH)
+		return center.astype('int'), avg.astype('int'), horizontal_angle, vertical_angle
 
 def cal_distance(poses, threshold):
 	"""
@@ -120,12 +130,15 @@ def main(args):
 			frame = st.read()
 
 			pil_image = cv2.resize(frame, (640, 480))
-
 			# prediction
 			poses, inference_time = engine.DetectPosesInImage(np.uint8(pil_image))
 
 			distance = cal_distance(poses, THRESHOLD)
-			position = pos_from_center(poses, THRESHOLD, frame.shape[:-1])
+			position = pos_from_center(poses, THRESHOLD, pil_image.shape[:-1])
+			if position:
+				center, avg, h_angle, v_angle = position
+				pil_image = cv2.circle(pil_image, tuple(center), 10, (0, 255, 0), 2)
+				pil_image = cv2.circle(pil_image, tuple(avg), 10, (0, 0, 255), 2)
 			if distance is None:
 				distance = 'UNKOWN'
 			else:
@@ -144,7 +157,7 @@ def main(args):
 					said = True
 				elif distance > MAX:
 					said = False
-				print(f'Distance to human: {distance}; Position of Human: {position}', end='\r')
+				print(f'Distance to human: {distance}; Position of Human: {h_angle}, {v_angle}', end='\r')
 			else:
 				print_count += 1
 			sys.stdout.write(ERASE_LINE)
@@ -162,23 +175,23 @@ def ros_run():
 	rospy.spin()
 
 if __name__ == "__main__":
-	ros_run()
-	"""
-	parser = ArgumentParser(description="Human depth estimation tool", prog="hde")
-	parser.add_argument("--ids", dest="ids", action="store_true", default=False,
-			help="Uses the ids camera")
-	parser.add_argument("--sm", dest="smooth", type=int, default=10,
-			help="Sets the max averaging frame. Default: 10")
-	parser.add_argument("--acc", dest="accuracy", type=int, default=0,
-			help="Sets the accuracy of the output. Uses max accuracy if value is smaller equal 0")
-	parser.add_argument("--pf", dest="frames", type=int, default=0,
-			help="Sets the amount of frames between each print output")
-	parser.add_argument("--show", dest="show", action="store_true",
-			help="Show camera stream")
-	parser.add_argument("--cam", dest="camera", type=int, default=0,
-			help="Sets the camera. Default: 0")
-	parser.add_argument("--th", dest="threshold", type=float, default=0.6,
-			help="Set the threshold for the model points. Default: 0.6")
-	args = parser.parse_args()
-	main(args)
-	"""
+	if False: # debug
+		ros_run()
+	else:
+		parser = ArgumentParser(description="Human depth estimation tool", prog="hde")
+		parser.add_argument("--ids", dest="ids", action="store_true", default=False,
+				help="Uses the ids camera")
+		parser.add_argument("--sm", dest="smooth", type=int, default=10,
+				help="Sets the max averaging frame. Default: 10")
+		parser.add_argument("--acc", dest="accuracy", type=int, default=0,
+				help="Sets the accuracy of the output. Uses max accuracy if value is smaller equal 0")
+		parser.add_argument("--pf", dest="frames", type=int, default=0,
+				help="Sets the amount of frames between each print output")
+		parser.add_argument("--show", dest="show", action="store_true",
+				help="Show camera stream")
+		parser.add_argument("--cam", dest="camera", type=int, default=0,
+				help="Sets the camera. Default: 0")
+		parser.add_argument("--th", dest="threshold", type=float, default=0.6,
+				help="Set the threshold for the model points. Default: 0.6")
+		args = parser.parse_args()
+		main(args)
