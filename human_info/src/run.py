@@ -10,6 +10,7 @@ import cv2
 import rospy
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
+from human_info.msg import HumanPos
 
 
 def pos_from_center(poses, shape):
@@ -126,22 +127,33 @@ def process_frame(frame):
     return distance, position, poses
 
 
-def ros_callback(frame):
-    """
-    Starts the frame processing and publishes on the channel
+class Processor:
+	def __init__(self):
+		self.pub = rospy.Publisher('human_info', queue_size=1)
 
-    @param frame The camera frame
-    """
-    frame = BRIDGE.imgmsg_to_cv2(frame, "bgr8")
-    distance, position, poses = process_frame(frame)
-    if position is not None:
-	    center, avg, h_angle, v_angle = position
-	    frame = add_pose(poses, frame)
-	    frame = add_centroids(frame, center, avg)
-	    print(f'Pub: {distance}, {h_angle}, {v_angle}')
-    # TODO publish on channel
-    cv2.imshow('CAM', frame)
-    cv2.waitKey(1)
+	def ros_callback(self, frame):
+		"""
+		Starts the frame processing and publishes on the channel
+
+		@param frame The camera frame
+		"""
+		frame = BRIDGE.imgmsg_to_cv2(frame, "bgr8")
+		distance, position, poses = process_frame(frame)
+		msg = HumanPos()
+		if distance is not None:
+			center, avg, h_angle, v_angle = position
+			frame = add_pose(poses, frame)
+			frame = add_centroids(frame, center, avg)
+			msg.h_angle = h_angle
+			msg.v_angle = v_angle
+			msg.distance = distance
+		else:
+			msg.h_angle = 0
+			msg.v_angle = 0
+			msg.distance = -1
+		self.pub.publish(msg)
+		cv2.imshow('CAM', frame)
+		cv2.waitKey(1)
 
 
 def ros_run():
@@ -149,7 +161,8 @@ def ros_run():
     Subscribs to the camera channel and starts the frame processing loop
     """
     rospy.init_node('human_distance', anonymous=True)
-    sub = rospy.Subscriber('/camera/image_raw', Image, ros_callback)
+	processor = Processor()
+    sub = rospy.Subscriber('/camera/image_raw', Image, processor.ros_callback)
     print('Subscribed to camera channel')
     rospy.spin()
 
