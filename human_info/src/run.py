@@ -5,13 +5,11 @@ Calcualtes the distance and the player position for each frame.
 The communication with other system components is organised via ros.
 """
 from config import *
-from pose_engine import PoseEngine
-import sys
 import numpy as np
 import cv2
 import rospy
 from sensor_msgs.msg import Image
-sys.path.append('project-posenet/')
+from cv_bridge import CvBridge
 
 
 def pos_from_center(poses, shape):
@@ -54,7 +52,7 @@ def cal_distance(poses):
             for f_name_1, f_name_2, dis in FEATURES:
                 keypoint_1 = keypoints[f_name_1]
                 keypoint_2 = keypoints[f_name_2]
-                if keypoint_1.score > threshold and keypoint_2.score > THRESHOLD:
+                if keypoint_1.score > THRESHOLD and keypoint_2.score > THRESHOLD:
                     # quality sufficient -> use keypoints
                     pix_distance = np.linalg.norm(
                         keypoint_1.yx - keypoint_2.yx, ord=1)
@@ -91,7 +89,7 @@ def add_pose(poses, frame):
         for feature1, feature2, _ in FEATURES:
             point_1 = keypoints[feature1]
             point_2 = keypoints[feature2]
-            if point_1.score > threshold and point_2.score > threshold:
+            if point_1.score > THRESHOLD and point_2.score > THRESHOLD:
                 y1, x1 = point_1.yx
                 y2, x2 = point_2.yx
                 frame = cv2.line(frame, (x1, y1), (x2, y2), (255, 0, 0), 2)
@@ -136,13 +134,14 @@ def ros_callback(frame):
     """
     frame = BRIDGE.imgmsg_to_cv2(frame, "bgr8")
     distance, position, poses = process_frame(frame)
-    center, avg, h_angle, v_angle = position
-    frame = add_pose(poses, frame)
-    frame = add_centroids(frame, center, avg)
+    if position is not None:
+	    center, avg, h_angle, v_angle = position
+	    frame = add_pose(poses, frame)
+	    frame = add_centroids(frame, center, avg)
+	    print(f'Pub: {distance}, {h_angle}, {v_angle}')
     # TODO publish on channel
     cv2.imshow('CAM', frame)
-    cv2.waitKey(0)
-    print(f'Pub: {distance}, {h_angle}, {v_angle}')
+    cv2.waitKey(1)
 
 
 def ros_run():
@@ -151,6 +150,7 @@ def ros_run():
     """
     rospy.init_node('human_distance', anonymous=True)
     sub = rospy.Subscriber('/camera/image_raw', Image, ros_callback)
+    print('Subscribed to camera channel')
     rospy.spin()
 
 

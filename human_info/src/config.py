@@ -1,5 +1,8 @@
 import numpy as np
 from cv_bridge import CvBridge
+import sys
+sys.path.append('project-posenet/')
+from pose_engine import PoseEngine
 
 ERASE_LINE = '\x1b[2K'
 
@@ -21,6 +24,8 @@ FEATURES = [
 ]
 
 MAX = 2
+
+THRESHOLD = 0.5
 
 # depends on the camera that is used
 # FOCAL_LENGTH = distance_to_obj * pixle_size_of_obj / real_obj_size
