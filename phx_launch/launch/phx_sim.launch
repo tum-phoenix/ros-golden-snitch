@@ -1,6 +1,6 @@
 <launch>
 	<!-- vim: set ft=xml noet : -->
-	<!-- example launch script for ArduPilot based FCU's -->
+	<!-- example launch script for ArduPilot based FCU's modified to fit simulation for phoenix robotics. -->
 
 	<arg name="fcu_url" default="udp://127.0.0.1:14551@14555" />
 	<arg name="gcs_url" default="" />
