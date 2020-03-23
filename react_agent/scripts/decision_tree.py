@@ -4,22 +4,27 @@ class Decision_tree:
 	def __init__(self):
 		pass
 
-	# @returns : a python list of length 4 on the format : [pox_x, pos_y, pos_z, yaw] in the local frame
-	def update(self, distances, where_is_human, how_far_is_human, ):  # this takes all inputs from all sensors etc.
-		state_var = 0
+	# @returns : a python list of length 4 on the format : [pox_x, pos_y, pos_z, yaw] in the local frame. Yaw is in degrees
+	def update(self, distances, dir_human, dist_human, ):  # this takes all inputs from all sensors etc.
+		# case = 0 => No human detected
+		# case = 1 =>
+		newPos = [0, 0] # We support for now only 2D movement
+		yaw = 0
+
+		case = 0
 		d_threshold = 1
-		if (state_var) == 0:
-			if where_is_human == None or how_far_is_human == None:
-				state_var = 1
+		if (case) == 0:
+			if dir_human == None or dist_human == None:
+				case = 1
 			if distances[0] < d_threshold:
-				state_var = 2
-		elif(state_var) == 1:
+				case = 2
+		elif(case) == 1:
 			pass
-		elif(state_var) == 2:
+		elif(case) == 2:
 			pass
-		elif(state_var) == 3:
+		elif(case) == 3:
 			pass
-		elif(state_var) == 4:
+		elif(case) == 4:
 			pass
 		else:
 			pass
@@ -28,4 +33,9 @@ class Decision_tree:
 
 		# ...
 
-		return [0,0,0,0]
+		# Yaw is controlled independently of the other movements
+
+		if case != 0: # we can see the human
+			yaw = - dir_human # TODO: Test if this is the correct sign
+
+		return [newPos[0],newPos[1],0,yaw]

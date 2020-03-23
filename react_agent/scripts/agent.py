@@ -5,6 +5,7 @@
 # this was copied from https://stackoverflow.com/questions/48830056/use-data-from-multiple-topics-in-ros-python
 import rospy
 from std_msgs.msg import Float64MultiArray
+from mavros import setpoint as SP
 from teraranger_array.msg import RangeArray
 from human_info.msg import HumanPos
 from decision_tree import Decision_tree
@@ -21,7 +22,11 @@ class Server:
 
         self.ai = Decision_tree()
 
+        # If this does not work, you can try to copy this example: https://github.com/mavlink/mavros/blob/master/test_mavros/scripts/setpoint_position_demo
         self.pub = rospy.Publisher('mavros/setpoint_position/local', PoseStamped, queue_size=1) # Should be the one mavros wants, but we don't know if Ardupilot will accept it.
+        # Ardupilot wants this message: https://ardupilot.org/dev/docs/copter-commands-in-guided-mode.html#set-position-target-local-ned
+        #   if you can make it ignore the velocity.
+        #       Tested and we can use this: "/mavros/setpoint_velocity/cmd_vel_unstamped" as long as we do velocity control
 
     def human_tracking_callback(self, msg):
         self.human_dist = msg.distance
