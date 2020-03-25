@@ -7,7 +7,7 @@ from geometry_msgs.msg import Twist, Vector3
 from std_msgs.msg import Header
 
 
-OPERATION_POSITION = [-35.36294910983843, 149.16928445322435, 579.717312261560] # Latitude, Longtitude, Altitude
+OPERATION_POSITION = [-35.36294910983843, 149.16928445322435, 579.717312261560] # Latitude, Longtitude, Altitude TODO: Find the position of Munich
 
 def printRestult(sucsess: bool, result: int):
     print("Sucsess:", sucsess, ", result:", result)
