@@ -2,7 +2,7 @@
 
 import mavros
 import rospy
-import scripts.mavrosInterface as mavrosInterface
+import mavrosInterface as mavrosInterface
 from mavros_msgs.srv import CommandHome, CommandTOL, CommandBool, SetMode
 from geographic_msgs.msg import GeoPointStamped, GeoPoint
 from geometry_msgs.msg import Twist, Vector3

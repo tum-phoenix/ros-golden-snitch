@@ -11,7 +11,7 @@ OPERATION_POSITION = [-35.36294910983843, 149.16928445322435, 579.717312261560] 
 
 class MavrosUAV:
     def __init__(self, initUAV=False):
-        rospy.init_node('phx/gs_launcher', anonymous=False)
+        rospy.init_node('phx_gs_launcher', anonymous=False)
 
         set_origin_topic_name = "/mavros/global_position/set_gp_origin"
         setpoint_vel_topic_name = "/mavros/setpoint_velocity/cmd_vel_unstamped"
@@ -68,23 +68,26 @@ class MavrosUAV:
 
 
     def arm(self, verbose=False):
-        res_arm = self.arm_srv(True)
+        res_arm, success = self.arm_srv(True)
         if verbose:
-            print("Result of arming:", res_arm)
+            print("Result of arming:", res_arm, success)
+        return success
 
     # block: True if the call should block until we have reached the specified altitude.
     def takeoff(self, altitude=1, block=True, verbose=False):
-        res_takeoff = self.takeoff_srv(min_pitch=0.0, yaw=0.0,latitude=OPERATION_POSITION[0], longitude=OPERATION_POSITION[1], altitude=altitude)
+        res_takeoff, success = self.takeoff_srv(min_pitch=0.0, yaw=0.0,latitude=OPERATION_POSITION[0], longitude=OPERATION_POSITION[1], altitude=altitude)
         if verbose:
-            print("Result of takeoff", res_takeoff)
+            print("Result of takeoff", res_takeoff,success)
         if block:
             rospy.sleep(5) # TODO: Replace this with a check for the height and see that it is >=0.9*altitude.
+        return success
 
     # block is True if the call should block until the UAV is landed.
     def land(self, block=True, verbose=False):
-        res_land = self.land_srv(min_pitch=0.0, yaw=0.0,latitude=OPERATION_POSITION[0], longitude=OPERATION_POSITION[1], altitude=1)
+        res_land, success = self.land_srv(min_pitch=0.0, yaw=0.0,latitude=OPERATION_POSITION[0], longitude=OPERATION_POSITION[1], altitude=1)
         if verbose:
-            print("Result of landing", res_land)
+            print("Result of landing", res_land,success)
+        return success
 
     # This is in the MAV frame.
     def set_vel_setpoint(self, dir, rot):
