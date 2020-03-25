@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import time
 
 import mavros
 import rospy
@@ -11,7 +10,7 @@ from std_msgs.msg import Header
 OPERATION_POSITION = [-35.36294910983843, 149.16928445322435, 579.717312261560] # Latitude, Longtitude, Altitude TODO: Find the position of Munich
 
 class MavrosUAV:
-    def __init__(self):
+    def __init__(self, initUAV=False):
         rospy.init_node('phx/gs_launcher', anonymous=False)
 
         set_origin_topic_name = "/mavros/global_position/set_gp_origin"
@@ -39,6 +38,9 @@ class MavrosUAV:
         print("Waiting for landing service")
         rospy.wait_for_service(landing_srv_name)
         self.land_srv = rospy.ServiceProxy(landing_srv_name, CommandTOL)
+
+        if initUAV:
+            self.init_uav()
 
 
     def init_uav(self, arm=False, takeoff=False, verbose=False):
@@ -76,7 +78,7 @@ class MavrosUAV:
         if verbose:
             print("Result of takeoff", res_takeoff)
         if block:
-            time.sleep(5) # TODO: Replace this with a check for the height and see that it is >=0.9*altitude.
+            rospy.sleep(5) # TODO: Replace this with a check for the height and see that it is >=0.9*altitude.
 
     # block is True if the call should block until the UAV is landed.
     def land(self, block=True, verbose=False):

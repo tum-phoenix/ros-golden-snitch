@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
+
 import mavros
 import rospy
+import scripts.mavrosInterface as mavrosInterface
 from mavros_msgs.srv import CommandHome, CommandTOL, CommandBool, SetMode
 from geographic_msgs.msg import GeoPointStamped, GeoPoint
 from geometry_msgs.msg import Twist, Vector3
@@ -75,9 +77,21 @@ class TestMavros:
 
 
 def main():
-    TM = TestMavros()
+    MI = mavrosInterface.MavrosUAV()
+    MI.init_uav()
+    input("Uav initialized")
 
-    TM.init_uav()
+    MI.arm(True)
+    input("Armed")
+
+    MI.takeoff(1, False)
+    print("taken off")
+
+    MI.set_vel_setpoint([1,0,0], [0,0,0])
+    rospy.sleep(2)
+
+    MI.land(False,True)
+
 
 
 if __name__ == '__main__':
