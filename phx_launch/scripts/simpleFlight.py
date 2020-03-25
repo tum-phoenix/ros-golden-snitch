@@ -48,27 +48,28 @@ class TestMavros:
         origin = GeoPointStamped()
         origin.header = Header() # TODO: Perhaps fill this with correct timestamp? It seems to work without in simulation.
         origin.position = GeoPoint()
-        origin.position.latitude = OPERATION_POSITION[0]  # TODO: Find the position of Phoneix HQ
+        origin.position.latitude = OPERATION_POSITION[0]
         origin.position.longitude = OPERATION_POSITION[1]
         origin.position.altitude = OPERATION_POSITION[2]
         self.set_origin_pub.publish(origin)
         print("Published ",origin)
         input()
 
-        res_arm = self.arm_srv(True)
-        print("Result of arming:", res_arm)
-        input()
+        if False:
+            res_arm = self.arm_srv(True)
+            print("Result of arming:", res_arm)
+            input()
 
-        res_takeoff = self.takeoff_srv(min_pitch=0.0, yaw=0.0,latitude=OPERATION_POSITION[0], longitude=OPERATION_POSITION[1], altitude=1)
-        print("Result of takeoff", res_takeoff)
-        input()
+            res_takeoff = self.takeoff_srv(min_pitch=0.0, yaw=0.0,latitude=OPERATION_POSITION[0], longitude=OPERATION_POSITION[1], altitude=1)
+            print("Result of takeoff", res_takeoff)
+            input()
 
-        new_vel = Twist(Vector3(1,0,0), Vector3(0,0,0)) # TODO: Should this be StapmedTwist instead?
-        self.set_vel_pub.publish(new_vel)
-        input("Just sent command to move")
+            new_vel = Twist(Vector3(1,0,0), Vector3(0,0,0)) # TODO: Should this be StapmedTwist instead?
+            self.set_vel_pub.publish(new_vel)
+            input("Just sent command to move")
 
-        res_land = self.land_srv(min_pitch=0.0, yaw=0.0,latitude=OPERATION_POSITION[0], longitude=OPERATION_POSITION[1], altitude=1)
-        print("Result of landing", res_land)
+            res_land = self.land_srv(min_pitch=0.0, yaw=0.0,latitude=OPERATION_POSITION[0], longitude=OPERATION_POSITION[1], altitude=1)
+            print("Result of landing", res_land)
 
 
 
@@ -77,14 +78,17 @@ class TestMavros:
 
 
 def main():
+
+    # MT = TestMavros()
+    # MT.init_uav()
     MI = mavrosInterface.MavrosUAV()
-    MI.init_uav()
-    input("Uav initialized")
+    MI.init_uav(verbose=True)
+    # input("Uav initialized")
 
     MI.arm(True)
-    input("Armed")
+    # input("Armed")
 
-    MI.takeoff(1, False)
+    MI.takeoff(1, block=True,verbose=True)
     print("taken off")
 
     MI.set_vel_setpoint([1,0,0], [0,0,0])

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import time
 
 import mavros
 import rospy
@@ -10,7 +11,7 @@ from std_msgs.msg import Header
 OPERATION_POSITION = [-35.36294910983843, 149.16928445322435, 579.717312261560] # Latitude, Longtitude, Altitude TODO: Find the position of Munich
 
 class MavrosUAV:
-    def __init__(self, initUAV=False):
+    def __init__(self, block = True, initUAV=False):
         rospy.init_node('phx_gs_launcher', anonymous=False)
 
         set_origin_topic_name = "/mavros/global_position/set_gp_origin"
@@ -39,6 +40,11 @@ class MavrosUAV:
         rospy.wait_for_service(landing_srv_name)
         self.land_srv = rospy.ServiceProxy(landing_srv_name, CommandTOL)
 
+        if block:
+            # TODO: Await EKF initializing
+            pass
+
+
         if initUAV:
             self.init_uav()
 
@@ -50,7 +56,7 @@ class MavrosUAV:
         if verbose:
             print("Res of setmode:", res_setMode)
 
-
+        rospy.sleep(5)
         origin = GeoPointStamped()
         origin.header = Header() # TODO: Perhaps fill this with correct timestamp? It seems to work without in simulation.
         origin.position = GeoPoint()
@@ -60,6 +66,7 @@ class MavrosUAV:
         self.set_origin_pub.publish(origin) # TODO: It might be that we need to wait after sending this, but I don't know for what.
         if verbose:
             print("Published ",origin)
+        time.sleep(40) # For some reason, it does not work if we use rospy.sleep(...)
 
         if arm or takeoff:
             self.arm()
@@ -68,25 +75,25 @@ class MavrosUAV:
 
 
     def arm(self, verbose=False):
-        res_arm, success = self.arm_srv(True)
+        success = self.arm_srv(True)
         if verbose:
-            print("Result of arming:", res_arm, success)
+            print("Result of arming:", success)
         return success
 
     # block: True if the call should block until we have reached the specified altitude.
     def takeoff(self, altitude=1, block=True, verbose=False):
-        res_takeoff, success = self.takeoff_srv(min_pitch=0.0, yaw=0.0,latitude=OPERATION_POSITION[0], longitude=OPERATION_POSITION[1], altitude=altitude)
+        success = self.takeoff_srv(min_pitch=0.0, yaw=0.0,latitude=OPERATION_POSITION[0], longitude=OPERATION_POSITION[1], altitude=altitude)
         if verbose:
-            print("Result of takeoff", res_takeoff,success)
+            print("Result of takeoff", success)
         if block:
-            rospy.sleep(5) # TODO: Replace this with a check for the height and see that it is >=0.9*altitude.
+            rospy.sleep(10) # TODO: Replace this with a check for the height and see that it is >=0.9*altitude.
         return success
 
     # block is True if the call should block until the UAV is landed.
     def land(self, block=True, verbose=False):
-        res_land, success = self.land_srv(min_pitch=0.0, yaw=0.0,latitude=OPERATION_POSITION[0], longitude=OPERATION_POSITION[1], altitude=1)
+        success = self.land_srv(min_pitch=0.0, yaw=0.0,latitude=OPERATION_POSITION[0], longitude=OPERATION_POSITION[1], altitude=1)
         if verbose:
-            print("Result of landing", res_land,success)
+            print("Result of landing", success)
         return success
 
     # This is in the MAV frame.
