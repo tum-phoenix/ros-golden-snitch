@@ -80,8 +80,17 @@ class MavrosUAV:
             print("Result of arming:", success)
         return success
 
+    def disarm(self, verbose=False):
+        success = self.arm_srv(False)
+        if verbose:
+            print("Result of disarming:", success)
+        return success
+
     # block: True if the call should block until we have reached the specified altitude.
     def takeoff(self, altitude=1, block=True, verbose=False):
+        # TODO: Check if armed
+        self.arm(verbose)
+
         success = self.takeoff_srv(min_pitch=0.0, yaw=0.0,latitude=OPERATION_POSITION[0], longitude=OPERATION_POSITION[1], altitude=altitude)
         if verbose:
             print("Result of takeoff", success)
