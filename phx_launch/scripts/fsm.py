@@ -28,7 +28,7 @@ class Fsm:
 
 
     def land_handler(self):
-        if self.state != States.LANDING
+        if self.state != States.LANDING:
             self.UAV.land(block=True,verbose=False)
             self.state = States.LANDING
 

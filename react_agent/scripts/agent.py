@@ -11,6 +11,7 @@ from human_info.msg import HumanPos
 from decision_tree import Decision_tree
 from geometry_msgs.msg import PoseStamped, Quaternion
 from std_msgs.msg import Header
+from geometry_msgs.msg import Twist, Vector3
 from tf.transformations import quaternion_from_euler
 
 
@@ -22,11 +23,8 @@ class Server:
 
         self.ai = Decision_tree()
 
-        # If this does not work, you can try to copy this example: https://github.com/mavlink/mavros/blob/master/test_mavros/scripts/setpoint_position_demo
-        self.pub = rospy.Publisher('mavros/setpoint_position/local', PoseStamped, queue_size=1) # Should be the one mavros wants, but we don't know if Ardupilot will accept it.
-        # Ardupilot wants this message: https://ardupilot.org/dev/docs/copter-commands-in-guided-mode.html#set-position-target-local-ned
-        #   if you can make it ignore the velocity.
-        #       Tested and we can use this: "/mavros/setpoint_velocity/cmd_vel_unstamped" as long as we do velocity control
+        self.pub = rospy.Publisher("phx/setpoint", Twist, queue_size=1)
+
 
     def human_tracking_callback(self, msg):
         self.human_dist = msg.distance
@@ -47,16 +45,21 @@ class Server:
             res = _convert_to_mavros_message(new_setpoint)
             self.pub.publish(res)
 
-def _convert_to_mavros_message(setpoint):
-    res = PoseStamped()
+def _convert_to_mavros_message(setpoint) -> Twist:
+    res = Twist()
     res.header = Header()
     res.header.stamp = rospy.Time.now()
-    res.pose.position.x = setpoint[0]
-    res.pose.position.y = setpoint[1]
-    res.pose.position.z = setpoint[2]
 
-    quaternion = quaternion_from_euler(0, 0, setpoint[3])
-    res.pose.orientation = Quaternion(*quaternion)
+    ## To be used with geometry_msg.Pose
+    # res.pose.position.x = setpoint[0]
+    # res.pose.position.y = setpoint[1]
+    # res.pose.position.z = setpoint[2]
+    # quaternion = quaternion_from_euler(0, 0, setpoint[3])
+    # res.pose.orientation = Quaternion(*quaternion)
+
+    res.linear = Vector3(*setpoint[:3])
+    res.angular = Vector3(0, 0, setpoint[3])
+
     return res
 
 
