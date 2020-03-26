@@ -65,3 +65,5 @@ class Fsm:
 if __name__ == '__main__':
     rospy.init_node("phx_GS_launcher")
     fsm = Fsm()
+
+    rospy.spin()
