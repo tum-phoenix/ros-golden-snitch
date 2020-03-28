@@ -15,6 +15,7 @@ def main():
 
     # MT = TestMavros()
     # MT.init_uav()
+    rospy.init_node("Simple_flight_node", anonymous=False)
     MI = mavrosInterface.MavrosUAV()
     MI.init_uav(verbose=True)
     # input("Uav initialized")

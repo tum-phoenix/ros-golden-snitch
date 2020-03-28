@@ -55,6 +55,7 @@ class MavrosUAV:
             print("Res of setmode:", res_setMode)
 
         rospy.sleep(5)
+        print("Waiting for ekf initialisation")
         origin = GeoPointStamped()
         origin.header = Header() # TODO: Perhaps fill this with correct timestamp? It seems to work without in simulation.
         origin.position = GeoPoint()
@@ -71,7 +72,13 @@ class MavrosUAV:
             if takeoff:
                 self.takeoff()
 
-
+    def set_mode(self,mode):
+        acceptedModes = ["GUIDED"]
+        if mode in acceptedModes:
+            return self.setmode_srv(0,mode)
+        else:
+            print("MOde not supported:", mode)
+            return -1
     def arm(self, verbose=False):
         success = self.arm_srv(True)
         if verbose:
