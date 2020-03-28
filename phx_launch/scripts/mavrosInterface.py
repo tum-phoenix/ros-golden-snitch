@@ -72,6 +72,8 @@ class MavrosUAV:
             if takeoff:
                 self.takeoff()
 
+        print("Uav is now initialized. We are done with waiting.")
+
     def set_mode(self,mode):
         acceptedModes = ["GUIDED"]
         if mode in acceptedModes:
