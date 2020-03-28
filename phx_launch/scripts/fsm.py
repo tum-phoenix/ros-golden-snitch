@@ -4,8 +4,9 @@ import rospy
 import scripts.mavrosInterface as mavrosInterface
 from enum import Enum
 from std_msgs.msg import Empty
-from geometry_msgs.msg import PoseStamped
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import PoseStamped, Twist
+from mavros_msgs.msg import State as UAV_State
+
 
 
 class States(Enum):
@@ -22,7 +23,8 @@ class Fsm:
         self.land_sub = rospy.Subscriber("phx/land", Empty, self.land_handler)
         self.takeoff_sub = rospy.Subscriber("phx/takeoff", Empty, self.takeoff_handler)
         self.control_input_sub = rospy.Subscriber("phx/setpoint", Twist,)
-        self.state_sub = rospy.Subscriber("/mavros/local_position/pose", PoseStamped, self.altitude_handler) # To check if we have reached the desired altitude to change state.
+        self.pose_sub = rospy.Subscriber("/mavros/local_position/pose", PoseStamped, self.altitude_handler) # To check if we have reached the desired altitude to change state.
+        self.uav_state_sub = rospy.Subscriber("/mavros/state", UAV_State, self.uav_state_handler)
 
         self.vel_pub = rospy.Publisher("/mavros/setpoint_velocity/cmd_vel_unstamped", Twist, queue_size=2)
 
@@ -55,6 +57,15 @@ class Fsm:
     def control_handler(self, cmd_msg):
         if self.state == States.FLYING:
             self.vel_pub.publish(cmd_msg)
+
+
+    def uav_state_handler(self, uav_state_msg):
+        if self.state == States.LANDING:
+            # We try to use the ardupilot landing detector. We need to configure the drone to disarm on landing, and then we detect landing by checking if it is armed.
+            # TODO: Configure ardupilot to disarm on landing and test that it works.
+            if not uav_state_msg.armed:
+                self.state = States.IDLE
+
 
 
 
