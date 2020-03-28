@@ -12,8 +12,6 @@ OPERATION_POSITION = [-35.36294910983843, 149.16928445322435, 579.717312261560] 
 
 class MavrosUAV:
     def __init__(self, block = True, initUAV=False):
-        rospy.init_node('phx_gs_launcher', anonymous=False)
-
         set_origin_topic_name = "/mavros/global_position/set_gp_origin"
         setpoint_vel_topic_name = "/mavros/setpoint_velocity/cmd_vel_unstamped"
         set_mode_srvname = "/mavros/set_mode"
