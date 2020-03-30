@@ -33,7 +33,7 @@ class Server:
         self.generate_setpiont()
 
     def ranges_callback(self, msg):
-        ranges = map(lambda x: x.range, msg.ranges)
+        ranges = list(map(lambda x: x.range, msg.ranges))
         self.distances = ranges
         print("Terraranger array messages:", ranges)
 
