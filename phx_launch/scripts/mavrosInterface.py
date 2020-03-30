@@ -7,6 +7,8 @@ from mavros_msgs.srv import  CommandTOL, CommandBool, SetMode
 from geographic_msgs.msg import GeoPointStamped, GeoPoint
 from geometry_msgs.msg import Twist, Vector3
 from std_msgs.msg import Header
+from mavros_msgs.msg import State as UAV_State
+
 
 OPERATION_POSITION = [-35.36294910983843, 149.16928445322435, 579.717312261560] # Latitude, Longtitude, Altitude TODO: Find the position of Munich
 
@@ -19,8 +21,12 @@ class MavrosUAV:
         takeoff_srv_name = "/mavros/cmd/takeoff"
         landing_srv_name = "/mavros/cmd/land"
 
+        self.uav_state = 0
+
         self.set_origin_pub = rospy.Publisher(set_origin_topic_name, GeoPointStamped, queue_size=10)
         self.set_vel_pub = rospy.Publisher(setpoint_vel_topic_name, Twist, queue_size=2)
+
+        self.uav_state_sub = rospy.Subscriber("/mavros/state", UAV_State, self.__uav_state_handler)
 
         print("Waiting for service setmode")
         rospy.wait_for_service(set_mode_srvname)
@@ -38,14 +44,14 @@ class MavrosUAV:
         rospy.wait_for_service(landing_srv_name)
         self.land_srv = rospy.ServiceProxy(landing_srv_name, CommandTOL)
 
-        if block:
-            # TODO: Await EKF initializing
-            pass
+        rospy.loginfo("All (necessary) services are found.")
 
 
         if initUAV:
             self.init_uav()
 
+    def __uav_state_handler(self, state_msg):
+        self.uav_state = state_msg.system_status # It did not work
 
     def init_uav(self, arm=False, takeoff=False, verbose=False):
         if verbose:
@@ -57,14 +63,16 @@ class MavrosUAV:
         rospy.sleep(5)
         print("Waiting for ekf initialisation")
         origin = GeoPointStamped()
-        origin.header = Header() # TODO: Perhaps fill this with correct timestamp? It seems to work without in simulation.
+        origin.header = Header()
+        origin.header.stamp = rospy.Time.now()
         origin.position = GeoPoint()
         origin.position.latitude = OPERATION_POSITION[0]
         origin.position.longitude = OPERATION_POSITION[1]
         origin.position.altitude = OPERATION_POSITION[2]
-        self.set_origin_pub.publish(origin) # TODO: It might be that we need to wait after sending this, but I don't know for what.
+        self.set_origin_pub.publish(origin)
         if verbose:
             print("Published ",origin)
+
         time.sleep(40) # For some reason, it does not work if we use rospy.sleep(...)
 
         if arm or takeoff:
@@ -116,3 +124,4 @@ class MavrosUAV:
     def set_vel_setpoint(self, dir, rot):
         new_vel = Twist(Vector3(*dir), Vector3(*rot))  # TODO: Should this be StapmedTwist instead?
         self.set_vel_pub.publish(new_vel)
+
