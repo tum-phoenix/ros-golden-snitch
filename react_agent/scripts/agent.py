@@ -28,7 +28,8 @@ class Server:
 
     def human_tracking_callback(self, msg):
         self.human_dist = msg.distance
-        self.human_dir = msg.angle
+        self.human_dir = (msg.h_angle, msg.v_angle,)
+
 
         self.generate_setpiont()
 
