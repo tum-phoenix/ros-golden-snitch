@@ -1,9 +1,13 @@
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
 import collections
 import math
 
 import numpy as np
 from PIL import Image
 import tensorflow as tf
+import cv2 
 
 KEYPOINTS = (
   'nose',
@@ -48,18 +52,31 @@ class Pose:
 	def __repr__(self):
 		return 'Pose({}, {})'.format(self.keypoints, self.score)
 
-def run():
-	img = get_image()
-	model = PoseEngine('models/posenet_mobilenet_v1_100_257x257_multi_kpt_stripped.tflite')
-	out = model.DetectPosesInImage(img)
-	pose = model.ParseOutput(out)
-	return pose, model
+def argmax_2d(tensor):
+  """
+  Uses implementation of https://stackoverflow.com/questions/36388431/tensorflow-multi-dimension-argmax
+  """
+  # input format: BxHxWxD
+  assert rank(tensor) == 4, f'Got tensor rank {rank(tensor)} but expected 4'
 
-def get_image():
-	return np.asarray(Image.open('img.jpg'), dtype=np.float32)
+  # flatten the Tensor along the height and width axes
+  flat_tensor = tf.reshape(tensor, (tf.shape(tensor)[0], -1, tf.shape(tensor)[3]))
 
-def sigmoid(x):
-	return 1 / (1 + np.exp(-x))
+  # argmax of the flat tensor
+  argmax = tf.cast(tf.argmax(flat_tensor, axis=1), tf.int32)
+
+  # convert indexes into 2D coordinates
+  argmax_x = argmax // tf.shape(tensor)[2]
+  argmax_y = argmax % tf.shape(tensor)[2]
+
+  # stack and return 2D coordinates
+  return tf.stack((argmax_x, argmax_y), axis=1)
+
+def rank(tensor):
+
+  # return the rank of a Tensor
+  return len(tensor.shape)
+
 
 class PoseEngine:
 
@@ -76,56 +93,75 @@ class PoseEngine:
 		
 	def DetectPosesInImage(self, img):	
 		
-		# Extend or crop the input to match the input shape of the network.
-		if img.shape[0] < self.image_height or img.shape[1] < self.image_width:
-			img = np.pad(img, [[0, max(0, self.image_height - img.shape[0])],
-							   [0, max(0, self.image_width - img.shape[1])], [0, 0]],
-						 mode='constant')
-		img = img[0:self.image_height, 0:self.image_width]
-		
 		self.interpreter.set_tensor(self.input_details[0]['index'], img[np.newaxis, :])
 
 		self.interpreter.invoke()
 
 		outputs = [self.interpreter.get_tensor(detail['index']) for detail in self.output_details]
 
-		return self.ParseOutput(outputs), 0
+		return self.ParseOutput(outputs) # TODO uncomment , 0
 		
 
 	def ParseOutput(self, outputs):
-		"""
-		Implementation based on https://github.com/tensorflow/examples/blob/master/lite/examples/posenet/android/posenet/src/main/java/org/tensorflow/lite/examples/posenet/lib/Posenet.kt
-		# TODO make the code more pythonic 
-		"""
-		heatmaps = outputs[0]
-		offsets = outputs[1]
 		
-		height, width = heatmaps[0, ..., 0].shape
-
-		key_points = []
-
-		# get maximum point of headmap for each keypoint
-		for key_point_num in range(17):
-			max_val = heatmaps[0,0,0, key_point_num]
-			max_row = 0
-			max_col = 0
-			for row in range(height):
-				for col in range(width):
-					if heatmaps[0,row,col,key_point_num] > max_val:
-						max_val = heatmaps[0,row,col,key_point_num]
-						max_row = row
-						max_col = col
-			key_points.append((max_row, max_col))
+		heatmaps = tf.cast(outputs[0], dtype=tf.float32) # (1 x 9 x 9 x 17)
+		offsets = outputs[1][0] # (1 x 9 x 9 x 34)
 		
-		key_point_map = {}
-		scores = []
-		# calculate pixle coordinates based on offset
-		for pos, (row, col) in enumerate(key_points):
-			x = int((row / (height - 1)) * self.image_height) # + offsets[0, row, col, pos])
-			y = int((col / (width - 1)) * self.image_width) #+ offsets[0, row, col, pos + 17])
-			score = sigmoid(heatmaps[0, row, col, pos]) * 100 
-			key_point = Keypoint(pos, (y,x), score)
-			scores.append(score)
-			key_point_map[KEYPOINTS[pos]] = key_point
-		pose = Pose(key_point_map, sum(scores))
-		return [pose]
+		scores = tf.sigmoid(heatmaps)
+		heatmapPositions = argmax_2d(scores)[0] # (2 x 17)
+		heatmapPositions = tf.transpose(heatmapPositions) # (17 x 2)
+		
+		heatmapPositions = tf.matmul(heatmapPositions, tf.constant([[1, 0], [0, 1]]))
+
+		offsetVectors = [
+			[offsets[y, x, k], offsets[y, x, k + 17]] 
+			for k, (y, x) in enumerate(heatmapPositions)
+		]
+
+		offsetVectors = tf.cast(tf.constant(offsetVectors), dtype=tf.int32)
+		
+		outputStride = 16
+		
+		keypointPositions = heatmapPositions * outputStride + offsetVectors
+		keypointScores = [scores[0, y, x, i] for i, (y, x) in enumerate(heatmapPositions)]
+		keypoints = []
+		for i in range(len(keypointScores)):
+			keypoint = Keypoint(i, keypointPositions[i], score=keypointScores[i])
+			keypoints.append(keypoint)
+		keypointMap = {KEYPOINTS[pos]:keypoint for pos, keypoint in enumerate(keypoints)}
+		pose = Pose(keypointMap, score=tf.math.reduce_mean(keypointScores))
+		return pose
+
+def add_pose(pose, frame):
+	"""
+	Draws the predicted feature points on the frame. Further, it draws lines between the
+	feature points it uses for prediction.
+
+	@param poses the poses predicted by the NN
+	@param frame the camera frame
+	@param threshold the score threshold for the pose prediction
+	"""
+	keypoints = pose.keypoints
+	for name in keypoints:
+		point = keypoints[name]
+		y, x = tuple(point.yx)
+		frame = cv2.circle(frame, (x, y), 2, (255, 0, 0), 2)
+	return frame
+
+def show_img(img, wait=0):
+	cv2.imshow('image', img)
+	cv2.waitKey(wait)
+
+def run():
+	cap = cv2.VideoCapture(0)
+	while True:
+		_, img = cap.read()
+		img = cv2.resize(np.float32(img), (257, 257))
+		model = PoseEngine('models/posenet_mobilenet_v1_100_257x257_multi_kpt_stripped.tflite')
+		pose = model.DetectPosesInImage(img)
+		img = add_pose(pose, img)
+		img = np.uint8(img)
+		show_img(img, wait=1)
+
+def get_image():
+	return cv2.imread('img.jpg') #np.asarray(Image.open('img.jpg'), dtype=np.float32)
