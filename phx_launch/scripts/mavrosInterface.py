@@ -3,7 +3,7 @@ import time
 
 import mavros
 import rospy
-from mavros_msgs.srv import  CommandTOL, CommandBool, SetMode
+from mavros_msgs.srv import  CommandTOL, CommandBool, SetMode, SetMavFrame
 from geographic_msgs.msg import GeoPointStamped, GeoPoint
 from geometry_msgs.msg import Twist, Vector3
 from std_msgs.msg import Header
@@ -20,6 +20,7 @@ class MavrosUAV:
         arming_srv_name = "/mavros/cmd/arming"
         takeoff_srv_name = "/mavros/cmd/takeoff"
         landing_srv_name = "/mavros/cmd/land"
+        ref_frame_srv_name = "/mavros/setpoint_velocity/mav_frame"
 
         self.uav_state = 0
 
@@ -44,6 +45,10 @@ class MavrosUAV:
         rospy.wait_for_service(landing_srv_name)
         self.land_srv = rospy.ServiceProxy(landing_srv_name, CommandTOL)
 
+        print("Waiting for reference frame service")
+        rospy.wait_for_service(ref_frame_srv_name)
+        self.set_ref_frame_srv = rospy.ServiceProxy(ref_frame_srv_name, SetMavFrame)
+
         rospy.loginfo("All (necessary) services are found.")
 
 
@@ -60,6 +65,10 @@ class MavrosUAV:
         if verbose:
             print("Res of setmode:", res_setMode)
 
+        res_set_ref_mode = self.set_ref_frame_srv(8) # FRAME_BODY_NED
+        if verbose:
+            print("Res of set_ref_frame", res_set_ref_mode)
+
         rospy.sleep(5)
         print("Waiting for ekf initialisation")
         origin = GeoPointStamped()
@@ -72,8 +81,8 @@ class MavrosUAV:
         self.set_origin_pub.publish(origin)
         if verbose:
             print("Published ",origin)
-
-        time.sleep(40) # For some reason, it does not work if we use rospy.sleep(...)
+        input("Ekf initialized?")
+        #time.sleep(40) # For some reason, it does not work if we use rospy.sleep(...)
 
         if arm or takeoff:
             self.arm()
@@ -124,4 +133,5 @@ class MavrosUAV:
     def set_vel_setpoint(self, dir, rot):
         new_vel = Twist(Vector3(*dir), Vector3(*rot))  # TODO: Should this be StapmedTwist instead?
         self.set_vel_pub.publish(new_vel)
+        print("Sendt setpoint ", new_vel)
 

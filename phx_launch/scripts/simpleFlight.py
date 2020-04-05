@@ -25,9 +25,19 @@ def main():
 
     MI.takeoff(1, block=True,verbose=True)
     print("taken off")
-
-    MI.set_vel_setpoint([1,0,0], [0,0,0])
-    rospy.sleep(2)
+    try:
+        while(True):
+            ans = input("Where do you want to fly?")
+            if ans == 'q':
+                break
+            elif ans == 's':  # Stop
+                MI.set_vel_setpoint([0, 0, 0], [0, 0, 0])
+            elif ans[0] == 'l': # Move linearly
+                MI.set_vel_setpoint([float(ans[1]),float(ans[2]),float(ans[3])], [0,0,0])
+            elif ans[0] == 'r': # Rotate
+                MI.set_vel_setpoint([0, 0, 0,], [float(ans[1]), float(ans[2]), float(ans[3])])
+    except IndexError:
+        print("Invalid input, landing")
 
     MI.land(False,True)
 
