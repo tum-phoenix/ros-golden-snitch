@@ -7,10 +7,10 @@ The communication with other system components is organised via ros.
 from config import *
 import numpy as np
 import cv2
-import rospy
-from sensor_msgs.msg import Image
-from cv_bridge import CvBridge
-from human_info.msg import HumanPos
+#import rospy
+#from sensor_msgs.msg import Image
+#from cv_bridge import CvBridge
+#from human_info.msg import HumanPos
 
 
 def pos_from_center(poses, shape):
