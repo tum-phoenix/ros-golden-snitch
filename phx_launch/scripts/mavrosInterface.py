@@ -5,9 +5,11 @@ import mavros
 import rospy
 from mavros_msgs.srv import  CommandTOL, CommandBool, SetMode, SetMavFrame
 from geographic_msgs.msg import GeoPointStamped, GeoPoint
-from geometry_msgs.msg import Twist, Vector3
+from geometry_msgs.msg import Twist, Vector3, PoseStamped, Pose, Point, Quaternion
 from std_msgs.msg import Header
 from mavros_msgs.msg import State as UAV_State
+import numpy as np
+
 
 
 OPERATION_POSITION = [-35.36294910983843, 149.16928445322435, 579.717312261560] # Latitude, Longtitude, Altitude TODO: Find the position of Munich
@@ -16,6 +18,7 @@ class MavrosUAV:
     def __init__(self, block = True, initUAV=False):
         set_origin_topic_name = "/mavros/global_position/set_gp_origin"
         setpoint_vel_topic_name = "/mavros/setpoint_velocity/cmd_vel_unstamped"
+        setpoint_pos_topic_name = "/mavros/setpoint_position/local"
         set_mode_srvname = "/mavros/set_mode"
         arming_srv_name = "/mavros/cmd/arming"
         takeoff_srv_name = "/mavros/cmd/takeoff"
@@ -26,6 +29,7 @@ class MavrosUAV:
 
         self.set_origin_pub = rospy.Publisher(set_origin_topic_name, GeoPointStamped, queue_size=10)
         self.set_vel_pub = rospy.Publisher(setpoint_vel_topic_name, Twist, queue_size=2)
+        self.set_pos_pub = rospy.Publisher(setpoint_pos_topic_name, PoseStamped, queue_size=2)
 
         self.uav_state_sub = rospy.Subscriber("/mavros/state", UAV_State, self.__uav_state_handler)
 
@@ -65,7 +69,7 @@ class MavrosUAV:
         if verbose:
             print("Res of setmode:", res_setMode)
 
-        res_set_ref_mode = self.set_ref_frame_srv(8) # FRAME_BODY_NED
+        res_set_ref_mode = self.set_ref_frame_srv(1) # FRAME_BODY_NED = 8 works for velocities
         if verbose:
             print("Res of set_ref_frame", res_set_ref_mode)
 
@@ -129,9 +133,30 @@ class MavrosUAV:
             print("Result of landing", success)
         return success
 
-    # This is in the MAV frame.
     def set_vel_setpoint(self, dir, rot):
         new_vel = Twist(Vector3(*dir), Vector3(*rot))  # TODO: Should this be StapmedTwist instead?
         self.set_vel_pub.publish(new_vel)
         print("Sendt setpoint ", new_vel)
 
+    def set_pos_setpoint(self, pos, rot):
+        newPose = PoseStamped()
+        newPose.header = Header()
+        newPose.header.stamp = rospy.Time.now()
+        newPose.pose = Pose()
+        newPose.pose.position = Point(*pos)
+        quat = euler_to_quaternion(*rot)
+        newPose.pose.orientation = Quaternion(quat[0], quat[1], quat[2], quat[3])
+        self.set_pos_pub.publish(newPose)
+
+def euler_to_quaternion(roll, pitch, yaw):
+
+    qx = np.sin(roll / 2) * np.cos(pitch / 2) * np.cos(yaw / 2) - np.cos(roll / 2) * np.sin(pitch / 2) * np.sin(
+        yaw / 2)
+    qy = np.cos(roll / 2) * np.sin(pitch / 2) * np.cos(yaw / 2) + np.sin(roll / 2) * np.cos(pitch / 2) * np.sin(
+        yaw / 2)
+    qz = np.cos(roll / 2) * np.cos(pitch / 2) * np.sin(yaw / 2) - np.sin(roll / 2) * np.sin(pitch / 2) * np.cos(
+        yaw / 2)
+    qw = np.cos(roll / 2) * np.cos(pitch / 2) * np.cos(yaw / 2) + np.sin(roll / 2) * np.sin(pitch / 2) * np.sin(
+        yaw / 2)
+
+    return [qx, qy, qz, qw]
