@@ -31,11 +31,11 @@ def main():
             if ans == 'q':
                 break
             elif ans == 's':  # Stop
-                MI.set_vel_setpoint([0, 0, 0], [0, 0, 0])
+                MI.set_pos_setpoint([0, 0, 0], [0, 0, 0])
             elif ans[0] == 'l': # Move linearly
-                MI.set_vel_setpoint([float(ans[1]),float(ans[2]),float(ans[3])], [0,0,0])
+                MI.set_pos_setpoint([float(ans[1]),float(ans[2]),float(ans[3])], [0,0,0])
             elif ans[0] == 'r': # Rotate
-                MI.set_vel_setpoint([0, 0, 0,], [float(ans[1]), float(ans[2]), float(ans[3])])
+                MI.set_pos_setpoint([0, 0, 0,], [float(ans[1]), float(ans[2]), float(ans[3])])
     except IndexError:
         print("Invalid input, landing")
 

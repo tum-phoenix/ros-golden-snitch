@@ -197,6 +197,11 @@ include_directories(
 ## Testing ##
 #############
 
+if(CATKIN_ENABLE_TESTING)
+  find_package(rostest REQUIRED)
+  add_rostest(fsm_test.test)
+endif()
+
 ## Add gtest based cpp test target and link libraries
 # catkin_add_gtest(${PROJECT_NAME}-test test/test_phx_launch.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
@@ -205,3 +210,4 @@ include_directories(
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+#catkin_add_nosetests(scripts/fsm_code_test.py)

@@ -1,0 +1,3 @@
+<launch>
+  <node pkg="phx_launch" name="phx_GS_launcher" type="fsm.py" />
+</launch>

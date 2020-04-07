@@ -103,6 +103,7 @@ class Fsm:
 
 
 if __name__ == '__main__':
+    print("Starting fstm")
     rospy.init_node("phx_GS_launcher")
     fsm = Fsm()
 
