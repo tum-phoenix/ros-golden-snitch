@@ -1,5 +1,5 @@
 import numpy as np
-from cv_bridge import CvBridge
+#from cv_bridge import CvBridge
 import sys
 sys.path.append('project-posenet/')
 from pose_engine import PoseEngine
@@ -34,4 +34,4 @@ FOCAL_LENGTH = 7.395847924773853e+02/2.3 #4.533079645790183e+02
 
 ENGINE = PoseEngine('project-posenet/models/posenet_mobilenet_v1_075_481_641_quant_decoder_edgetpu.tflite')
 
-BRIDGE = CvBridge()
+#BRIDGE = CvBridge()
