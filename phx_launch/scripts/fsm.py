@@ -50,7 +50,7 @@ class Fsm:
     def takeoff_handler(self, empty):
         if self.state == States.IDLE:
             self.UAV.arm()
-            self.UAV.takeoff(self.TAKEOFF_HEIGHT, block=True)
+            self.UAV.takeoff(self.TAKEOFF_HEIGHT, block=False)
             self.set_state(States.TAKING_OFF)
 
     def altitude_handler(self, alt):
