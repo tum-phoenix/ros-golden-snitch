@@ -37,14 +37,27 @@ def check_if_a_wall_is_near(self, distances):
             break
     if self.Wall_detected == 0 # Wall detected
 
-def decision(self,distances): #didn't make use of sensors 2,4 & 8 yet and there is no randomness in the algorithm
-    if(self.Human_detected && distances[5]<0): # no wall detected behind the drone: by default we fly backwards
-        return 
-    elif(self.Human_detected && distances[5]>0 && distance[3]<0] # no wall detected on our right
-        return
-    elif(self.Human_detected && distances[5]>0 && distance[3]>0 && distances[7]<0] # only left is an option
-        return
-		
+def decision(self,distances, yaw): # decision returns a new position & changes in the yaw there is no randomness in the algorithm
+    if(self.Human_detected):
+        if(distances[5]<0): # no wall detected behind the drone: by default we fly backwards
+            return 
+        elif(distances[5]>0 && distance[3]<0): # no wall detected on our right 
+            return
+        elif(distances[5]>0 && distance[3]>0 && distances[7]<0): # only left is an option
+            return
+	    elif(distances[5]>0 && distance[3]>0 && distances[7]>0 && distamces[2]<0): #we don't fly forwards because the human only can be in front of us (detected by camera)
+            return
+        elif(distances[5]>0 && distance[3]>0 && distances[7]>0 && distances[2]>0 && distances[4]<0):
+            return
+        elif(distances[5]>0 && distance[3]>0 && distances[7]>0 && distances[2]>0 && distances[4]>0 && distances[6]<0):
+            return
+        elif(distances[5]>0 && distance[3]>0 && distances[7]>0 && distances[2]>0 && distances[4]>0 && distances[6]>0 && distances[8]<0):
+            return
+        else: # no option left
+            return
+    else: # no human detected, we are looking for the human -> change yaw
+        
+
 class Decision_tree:
 	
 	def __init__(self):
@@ -79,7 +92,7 @@ class Decision_tree:
         # deciding in human_detected() if it's case 1, 2 or 3
 			human_detected(self,distances, dir_human,dist_human, yaw)
         
-        decision(self, distances)
+        decision(self, distances, yaw)
 
 		# Yaw is controlled independently of the other movements
 
