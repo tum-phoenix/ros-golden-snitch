@@ -18,7 +18,7 @@ const unsigned int numOfRangeSensors = 8;
  */
 void correctDistances(
         std::array<double, numOfRangeSensors> ranges,
-        std::vector<double> attitude,
+        std::array<double, 3> attitude,
         double altitude,
         std::array<double, numOfRangeSensors> dirOfRangeSensors,
         std::array<double, numOfRangeSensors> &correctRanges,
