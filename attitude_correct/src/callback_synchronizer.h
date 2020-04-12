@@ -10,18 +10,20 @@
 #include "geometry_msgs/PoseStamped.h"
 #include "std_msgs/Float64.h"
 #include "distance_corrector.h"
-
+#include "ros/ros.h"
 
 //const unsigned int numOfRangeSensors = 8;
 
 
 class CallbackSynchronizer {
 private:
+    ros::Publisher rangesOut;
     //std::array<double, numOfRangeSensors> ranges;
     std::array<double, 3> attitude;
     double altitude;
 
 public:
+    explicit CallbackSynchronizer(ros::Publisher rangesOut);
     void rangesCallback(teraranger_array::RangeArray msg);
     void attitudeCallback(geometry_msgs::PoseStamped msg);
     void altitudeCallback(std_msgs::Float64 msg);
