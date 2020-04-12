@@ -6,6 +6,7 @@
 
 
 
+
 void correctDistances(
         std::array<double, numOfRangeSensors> ranges,
         std::vector<double> attitude,
