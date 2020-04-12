@@ -39,24 +39,24 @@ def check_if_a_wall_is_near(self, distances):
 
 def decision(self,distances, yaw): # decision returns a new position & changes in the yaw there is no randomness in the algorithm
     if(self.Human_detected):
-        if(distances[5]<0): # no wall detected behind the drone: by default we fly backwards
+        if(distances[4]<0): # no wall detected behind the drone: by default we fly backwards
             return 
-        elif(distances[5]>0 && distance[3]<0): # no wall detected on our right 
+        elif(distances[4]>0 && distance[2]<0): # no wall detected on our right 
             return
-        elif(distances[5]>0 && distance[3]>0 && distances[7]<0): # only left is an option
+        elif(distances[4]>0 && distance[2]>0 && distances[6]<0): # only left is an option
             return
-	    elif(distances[5]>0 && distance[3]>0 && distances[7]>0 && distamces[2]<0): #we don't fly forwards because the human only can be in front of us (detected by camera)
+	    elif(distances[4]>0 && distance[2]>0 && distances[6]>0 && distamces[1]<0): #we don't fly forwards because the human only can be in front of us (detected by camera)
             return
-        elif(distances[5]>0 && distance[3]>0 && distances[7]>0 && distances[2]>0 && distances[4]<0):
+        elif(distances[4]>0 && distance[2]>0 && distances[6]>0 && distances[1]>0 && distances[3]<0):
             return
-        elif(distances[5]>0 && distance[3]>0 && distances[7]>0 && distances[2]>0 && distances[4]>0 && distances[6]<0):
+        elif(distances[4]>0 && distance[2]>0 && distances[6]>0 && distances[1]>0 && distances[3]>0 && distances[5]<0):
             return
-        elif(distances[5]>0 && distance[3]>0 && distances[7]>0 && distances[2]>0 && distances[4]>0 && distances[6]>0 && distances[8]<0):
+        elif(distances[4]>0 && distance[2]>0 && distances[6]>0 && distances[1]>0 && distances[3]>0 && distances[5]>0 && distances[7]<0):
             return
         else: # no option left
             return
-    else: # no human detected, we are looking for the human -> change yaw
-        
+    else: # no human detected, we are looking for the human -> change yaw. I was thinking that it might be interesting to know in which case we were before we are turning to the last position we knew about the human. For example: if we were only flying backwards the yaw would be 0. Then we need to search for the human.
+        self.LastPosHuman
 
 class Decision_tree:
 	
