@@ -21,7 +21,6 @@ std::array<double,3> eulerFromQuat(geometry_msgs::Quaternion quat){
 }
 
 
-
 void CallbackSynchronizer::rangesCallback(teraranger_array::RangeArray msg) {
     std::array<double, numOfRangeSensors> res{}; // = new std::array<double, numOfRangeSensors>();
     for (int i=0;i<msg.ranges.size();i++) {
@@ -56,6 +55,7 @@ int main(int argc, char **argv){
     ros::Publisher rangesOut = n.advertise<teraranger_array::RangeArray>(rangesOutName, 1);
     ros::Subscriber rangesIn = n.subscribe(rangesInName, 1, &CallbackSynchronizer::rangesCallback, csp);
     ros::Subscriber attitude = n.subscribe(attitudeTopicName, 1, &CallbackSynchronizer::attitudeCallback, csp);
+    ROS_INFO("Attitude_correct is now initialized");
     ros::spin();
     return 0;
 }

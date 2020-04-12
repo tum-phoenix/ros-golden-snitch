@@ -15,6 +15,7 @@ void rangesCallback(teraranger_array::RangeArray msg){
 }
 
 int main(int argc, char **argv){
+    std::cout << "Attutude_correct_node is now running. \n";
     std::string attitudeTopicName  = "/mavros/local_position/pose";
     std::string rangesOutName = "phx_attitude_corrected_ranges";
     std::string rangesInName = "/multiflex_1/ranges_raw";
@@ -24,6 +25,7 @@ int main(int argc, char **argv){
     ros::Publisher rangesOut = n.advertise<teraranger_array::RangeArray>(rangesOutName, 1);
     ros::Subscriber rangesIn = n.subscribe(rangesInName, 1, rangesCallback);
     ros::Subscriber attitude = n.subscribe(attitudeTopicName, 1, attitudeCallback);
+    LOG_INFO("attitude_correct_node initialized, now spinning.\n");
     ros::spin();
     return 0;
 }
