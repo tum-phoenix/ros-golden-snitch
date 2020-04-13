@@ -152,11 +152,11 @@ class Processor:
 			# filtering odd values
 			lst = []
 	    	if len(lst) < 10:
-				lst.append(distance)
+				lst.append(msg.distance)
 				break
 			else:
 				lst.remove(lst[0])
-			    lst.append(distance)
+			    lst.append(msg.distance)
 			    average_distance = sum(lst)/len(lst)
 				msg.distance = average_distance
 
