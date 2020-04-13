@@ -139,7 +139,7 @@ class Processor:
 		frame = BRIDGE.imgmsg_to_cv2(frame, "bgr8")
 		frame = cv2.resize(frame, (640, 480))
 		distance, position, poses = process_frame(frame)
-		if position is not None:	
+		if position is not None:
 			center, avg, h_angle, v_angle = position
 			frame = add_pose(poses, frame)
 			frame = add_centroids(frame, center, avg)
@@ -148,6 +148,21 @@ class Processor:
 			msg.h_angle = h_angle
 			msg.v_angle = v_angle
 			msg.distance = distance
+
+			# filtering odd values
+			lst = []
+	    	if len(lst) < 10:
+				lst.append(distance)
+				break
+			else:
+				lst.remove(lst[0])
+			    lst.append(distance)
+			    average_distance = sum(lst)/len(lst)
+				msg.distance = average_distance
+
+
+
+
 		else:
 			msg.h_angle = 0
 			msg.v_angle = 0
