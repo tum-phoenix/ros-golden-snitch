@@ -160,9 +160,6 @@ class Processor:
 			    average_distance = sum(lst)/len(lst)
 				msg.distance = average_distance
 
-
-
-
 		else:
 			msg.h_angle = 0
 			msg.v_angle = 0
