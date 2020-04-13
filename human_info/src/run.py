@@ -148,18 +148,9 @@ class Processor:
 			msg.h_angle = h_angle
 			msg.v_angle = v_angle
 			msg.distance = distance
-
 			# filtering odd values
-			lst = []
-	    	if len(lst) < 10:
-				lst.append(msg.distance)
-				break
-			else:
-				lst.remove(lst[0])
-			    lst.append(msg.distance)
-			    average_distance = sum(lst)/len(lst)
-				msg.distance = average_distance
-
+			self.filter = Filter()
+			msg.distance = self.filter.update(msg.distance)
 		else:
 			msg.h_angle = 0
 			msg.v_angle = 0
