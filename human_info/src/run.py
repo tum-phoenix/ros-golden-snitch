@@ -5,6 +5,7 @@ Calcualtes the distance and the player position for each frame.
 The communication with other system components is organised via ros.
 """
 from config import *
+from filter import *
 import numpy as np
 import cv2
 #import rospy
@@ -58,8 +59,12 @@ def cal_distance(poses):
 					pix_distance = np.linalg.norm(
 						keypoint_1.yx - keypoint_2.yx, ord=1)
 					distance = dis * FOCAL_LENGTH / pix_distance
+					#filtering odd values
+					self.outlier_rejection = Outlier_Rejection()
+					distance = self.outlier_rejection.update(distance)
 					# TODO remove debug when testing is done
 					feature_dis.append(distance)
+
 			if len(feature_dis) > 0:
 				# avg over feature distances
 				distance = sum(feature_dis)/len(feature_dis)
@@ -149,7 +154,7 @@ class Processor:
 			msg.v_angle = v_angle
 			msg.distance = distance
 			# filtering odd values
-			self.filter = Filter()
+			self.filter = average_Filter()
 			msg.distance = self.filter.update(msg.distance)
 		else:
 			msg.h_angle = 0
