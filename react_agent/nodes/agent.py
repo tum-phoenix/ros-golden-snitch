@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 
 
@@ -8,6 +8,7 @@ from std_msgs.msg import Float64MultiArray
 from mavros import setpoint as SP
 from teraranger_array.msg import RangeArray
 from human_info.msg import HumanPos
+# from react_agent import Decision_tree
 from react_agent.decision_tree import Decision_tree
 from geometry_msgs.msg import PoseStamped, Quaternion
 from std_msgs.msg import Header

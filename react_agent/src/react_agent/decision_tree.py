@@ -37,31 +37,31 @@ def human_detected(self, distances, yaw):
 def check_if_a_wall_is_near(self, distances):
     i = 0
     while (i < 9):
-        if distances[i] > 0 & & i <:
+        if distances[i] > 0:# and i <: TODO ?
             self.Wall_detected = 0
             break
-    if self.Wall_detected == 0  # Wall detected
-
+    if self.Wall_detected == 0:  # Wall detected
+        pass
 
 def decision(self, distances,
              yaw):  # decision returns a new position & changes in the yaw there is no randomness in the algorithm
     if (self.Human_detected):
         if (distances[4] < 0):  # no wall detected behind the drone: by default we fly backwards
             return
-        elif (distances[4] > 0 & & distance[2] < 0):  # no wall detected on our right
+        elif (distances[4] > 0 and distances[2] < 0):  # no wall detected on our right
             return
-        elif (distances[4] > 0 & & distance[2] > 0 & & distances[6] < 0):  # only left is an option
+        elif (distances[4] > 0 and distances[2] > 0 and distances[6] < 0):  # only left is an option
             return
-        elif (distances[4] > 0 & & distance[2] > 0 & & distances[6] > 0 & & distamces[
+        elif (distances[4] > 0 and distances[2] > 0 and distances[6] > 0 and distamces[
                 1] < 0):  # we don't fly forwards because the human only can be in front of us (detected by camera)
             return
-        elif (distances[4] > 0 & & distance[2] > 0 & & distances[6] > 0 & & distances[1] > 0 & & distances[3] < 0):
+        elif (distances[4] > 0 and distances[2] > 0 and distances[6] > 0 and distances[1] > 0 and distances[3] < 0):
             return
-        elif (distances[4] > 0 & & distance[2] > 0 & & distances[6] > 0 & & distances[1] > 0 & & distances[3] > 0 & &
+        elif (distances[4] > 0 and distances[2] > 0 and distances[6] > 0 and distances[1] > 0 and distances[3] > 0 and
               distances[5] < 0):
             return
-        elif (distances[4] > 0 & & distance[2] > 0 & & distances[6] > 0 & & distances[1] > 0 & & distances[3] > 0 & &
-              distances[5] > 0 & & distances[7] < 0):
+        elif (distances[4] > 0 and distances[2] > 0 and distances[6] > 0 and distances[1] > 0 and distances[3] > 0 and
+              distances[5] > 0 and distances[7] < 0):
             return
         else:  # no option left
             return
@@ -74,43 +74,43 @@ class Decision_tree:
     def __init__(self):
         self.LastPosHuman = [0, 0]
 
-    self.Human_detected = False
-    self.Wall_detected = 1
-    self.Wall_left = 1  # I was thinking of making a 2 dimensional array later so we can work with more exact coordinates of the wall
-    self.Wall_right = 1
-    self.Wall_inFront = 1
-    self.Wall_behind = 1
-    self.Sensor_ancle_positioning = [0, 45, 90, 135, 180, 225, 270, 315]
-    pass
+        self.Human_detected = False
+        self.Wall_detected = 1
+        self.Wall_left = 1  # I was thinking of making a 2 dimensional array later so we can work with more exact coordinates of the wall
+        self.Wall_right = 1
+        self.Wall_inFront = 1
+        self.Wall_behind = 1
+        self.Sensor_ancle_positioning = [0, 45, 90, 135, 180, 225, 270, 315]
+        pass
 
 
-# @returns : a python list of length 4 on the format : [vel_x, vel_y, vel_z, yaw] in the local frame. Yaw is in degrees
-# dir_human, distances, dist_human 2-dimensional array
-# distances is a 8th dimensional array consisting of the measurments of the 8 sensors
-def update(self, distances, dir_human, dist_human):  # this takes all inputs from all sensors etc.
+    # @returns : a python list of length 4 on the format : [vel_x, vel_y, vel_z, yaw] in the local frame. Yaw is in degrees
+    # dir_human, distances, dist_human 2-dimensional array
+    # distances is a 8th dimensional array consisting of the measurments of the 8 sensors
+    def update(self, distances, dir_human, dist_human):  # this takes all inputs from all sensors etc.
 
-    # case = 0 => No human detected
-    # case = 1 => human is close
-    # case = 2 => human is far away
-    # case = 3 => wall detected
-    # case = 4 => nothing detected
+        # case = 0 => No human detected
+        # case = 1 => human is close
+        # case = 2 => human is far away
+        # case = 3 => wall detected
+        # case = 4 => nothing detected
 
-    newPos = [0, 0]  # We support for now only 2D movement
-    yaw = 0
+        newPos = [0, 0]  # We support for now only 2D movement
+        yaw = 0
 
-    # case 0
-    if dist_human < 0:
-        human_not_detected(self, distances, yaw)
-    else:
-        # deciding in human_detected() if it's case 1, 2 or 3
-        human_detected(self, distances, dir_human, dist_human, yaw)
+        # case 0
+        if dist_human < 0:
+            human_not_detected(self, distances, yaw)
+        else:
+            # deciding in human_detected() if it's case 1, 2 or 3
+            human_detected(self, distances, dir_human, dist_human, yaw)
 
 
-decision(self, distances, yaw)
+        decision(self, distances, yaw)
 
-# Yaw is controlled independently of the other movements
+        # Yaw is controlled independently of the other movements
 
-return [newPos[0], newPos[1], 0, yaw]
+        return [newPos[0], newPos[1], 0, yaw]
 
 
 def main():
