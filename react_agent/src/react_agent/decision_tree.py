@@ -8,6 +8,7 @@ def closestDist(distances):
         if closestLength < dist:
             closestIndex = i
             closestLength = dist
+    return closestLength
 
 
 def human_detected():
@@ -51,7 +52,7 @@ def decision(self, distances,
             return
         elif (distances[4] > 0 & & distance[2] > 0 & & distances[6] < 0):  # only left is an option
             return
-            elif (distances[4] > 0 & & distance[2] > 0 & & distances[6] > 0 & & distamces[
+        elif (distances[4] > 0 & & distance[2] > 0 & & distances[6] > 0 & & distamces[
                 1] < 0):  # we don't fly forwards because the human only can be in front of us (detected by camera)
             return
         elif (distances[4] > 0 & & distance[2] > 0 & & distances[6] > 0 & & distances[1] > 0 & & distances[3] < 0):
