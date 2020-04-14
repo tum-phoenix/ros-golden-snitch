@@ -40,5 +40,5 @@ class Outlier_Rejection:
         if len(self.lst) > 1:
             incr_difference = abs(self.lst[-1] - self.lst[-2])
             if  incr_difference > self.max_difference:
-                self.distance.remove(self.lst[-1])
+                self.lst.remove(self.lst[-1])
         return lst[-1]
