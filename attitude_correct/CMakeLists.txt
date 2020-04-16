@@ -136,7 +136,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide Taken out: src/attitude_correct_node.cpp
-add_executable(${PROJECT_NAME}_node src/distance_corrector.cpp src/distance_corrector.h src/callback_synchronizer.cpp src/callback_synchronizer.h)
+add_executable(${PROJECT_NAME}_node src/distance_corrector.cpp include/attitude_correct/distance_corrector.h src/callback_synchronizer.cpp include/attitude_correct/callback_synchronizer.h)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -199,11 +199,21 @@ install(TARGETS ${PROJECT_NAME}_node
 ## Testing ##
 #############
 
-## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_attitude_correct.cpp)
-# if(TARGET ${PROJECT_NAME}-test)
-#   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
-# endif()
+if(CATKIN_ENABLE_TESTING)
+#    find_package(rostest REQUIRED)
+#    add_rostest_gtest(${PROJECT_NAME}-test test/attitude_corrector.test test/distance_corrector_test.cpp)
+##    target_link_libraries(${PROJECT_NAME}-test ${catkin_LIBRARIES})
+#    include_directories(${PROJECT_NAME}-test include)
 
-## Add folders to be run by python nosetests
-# catkin_add_nosetests(test)
+  add_library(${PROJECT_NAME}_LIB src/distance_corrector.cpp)
+  ## Add gtest based cpp test target and link libraries
+  catkin_add_gtest(${PROJECT_NAME}-test test/distance_corrector_test.cpp)
+  if(TARGET ${PROJECT_NAME}-test)
+#    target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
+    include_directories(${PROJECT_NAME}-test include)
+    target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME}_LIB)
+  endif()
+
+  ## Add folders to be run by python nosetests
+  # catkin_add_nosetests(test)
+endif()

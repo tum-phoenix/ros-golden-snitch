@@ -2,7 +2,7 @@
 // Created by henrik on 12.04.2020.
 //
 
-#include "callback_synchronizer.h"
+#include "../include/attitude_correct/callback_synchronizer.h"
 #include "sensor_msgs/Range.h"
 #include "std_msgs/Header.h"
 #include "geometry_msgs/Quaternion.h"
