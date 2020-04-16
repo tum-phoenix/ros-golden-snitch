@@ -32,7 +32,7 @@ class Outlier_Rejection:
     """
     def __init__(self):
         # maximal difference allowed between two timesteps
-        self.max_difference = 0.50
+        self.max_difference = 50
         self.lst = []
 
     def update(self, new_dist):
