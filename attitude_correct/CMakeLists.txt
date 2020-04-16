@@ -205,12 +205,13 @@ if(CATKIN_ENABLE_TESTING)
 ##    target_link_libraries(${PROJECT_NAME}-test ${catkin_LIBRARIES})
 #    include_directories(${PROJECT_NAME}-test include)
 
-
+  add_library(${PROJECT_NAME}_LIB src/distance_corrector.cpp)
   ## Add gtest based cpp test target and link libraries
   catkin_add_gtest(${PROJECT_NAME}-test test/distance_corrector_test.cpp)
   if(TARGET ${PROJECT_NAME}-test)
 #    target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
     include_directories(${PROJECT_NAME}-test include)
+    target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME}_LIB)
   endif()
 
   ## Add folders to be run by python nosetests
