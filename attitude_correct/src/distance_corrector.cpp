@@ -2,7 +2,7 @@
 // Created by henrik on 04.04.2020.
 //
 
-#include "distance_corrector.h"
+#include "../include/attitude_correct/distance_corrector.h"
 #include <cmath>
 
 

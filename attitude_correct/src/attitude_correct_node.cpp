@@ -4,7 +4,7 @@
 #include "geometry_msgs/PoseStamped.h"
 #include "teraranger_array/RangeArray.h"
 
-#include "callback_synchronizer.h"
+#include "../include/attitude_correct/callback_synchronizer.h"
 
 void attitudeCallback(geometry_msgs::PoseStamped msg){
 
