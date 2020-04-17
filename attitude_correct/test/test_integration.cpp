@@ -6,6 +6,7 @@
 #include "gtest/gtest.h"
 #include <ros/ros.h>
 #include <cstdint>
+#include "attitude_correct/callback_synchronizer.h"
 
 #include <teraranger_array/RangeArray.h>
 #include <std_msgs/Header.h>
@@ -86,16 +87,27 @@ protected:
 };
 
 TEST_F(DistanceCorrectorTest, IntegrationTest) {
-    ros::Subscriber sub_ranges = n.subscribe<teraranger_array::RangeArray>("phx_attitude_corrected_ranges", 1, &CallbackContainer::cb, &cbc);
-    ros::Publisher pub_ranges = n.advertise<teraranger_array::RangeArray>("/multiflex_1/ranges_raw", 1);
-    ros::Publisher pub_attitude = n.advertise<geometry_msgs::PoseStamped>("/mavros/local_position/pose", 1);
-    ros::Publisher pub_altitude = n.advertise<std_msgs::Float64>("/mavros/global_position/rel_alt", 1);
-
     ROS_INFO("Starting integration test.");
+    std::cout << "This is  where cout ends up.\n";
+    ros::master::V_TopicInfo master_topics;
+    ros::master::getTopics(master_topics);
+
+    for (ros::master::V_TopicInfo::iterator it = master_topics.begin() ; it != master_topics.end(); it++) {
+        const ros::master::TopicInfo& info = *it;
+        std::cout << "topic_" << it - master_topics.begin() << ": " << info.name << ", " << info.datatype << std::endl;
+    }
+
+    ros::Subscriber sub_ranges = n.subscribe<teraranger_array::RangeArray>("phx_attitude_corrected_ranges", 3, &CallbackContainer::cb, &cbc);
+    ros::Publisher pub_ranges = n.advertise<teraranger_array::RangeArray>("/multiflex_1/ranges_raw", 3);
+    ros::Publisher pub_attitude = n.advertise<geometry_msgs::PoseStamped>("/mavros/local_position/pose", 3);
+    ros::Publisher pub_altitude = n.advertise<std_msgs::Float64>("/mavros/global_position/rel_alt", 3);
+
+
+
     ASSERT_EQ(0, cbc.count);
     pub_ranges.publish(range_msg);
     for(unsigned long i = 0; i<2e9;i++){}
-    ros::Duration(1).sleep();
+    ros::Duration(2).sleep();
     ASSERT_EQ(1, cbc.count);
     ASSERT_EQ(range_msg, cbc.lastMsg);
 
@@ -115,5 +127,6 @@ TEST_F(DistanceCorrectorTest, IntegrationTest) {
 int main(int argc, char** argv){
     testing::InitGoogleTest(&argc, argv);
     ros::init(argc, argv, "int_test_attitude_correct");
+//    main(argc, argv);
     return RUN_ALL_TESTS();
 }

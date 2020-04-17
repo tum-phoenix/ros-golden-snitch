@@ -36,7 +36,7 @@ teraranger_array::RangeArray getMessage(teraranger_array::RangeArray  old, std::
 
 void CallbackSynchronizer::rangesCallback(teraranger_array::RangeArray msg) {
     std::cout << "Received ranges\n";
-    ROS_WARN("Received new ranges\n");
+    ROS_INFO_STREAM("Received new ranges\n");
     std::array<double, numOfRangeSensors> res{}; // = new std::array<double, numOfRangeSensors>();
     for (int i=0;i<msg.ranges.size();i++) {
         res[i] = msg.ranges[i].range;
@@ -56,6 +56,7 @@ std::ostream& operator<<(std::ostream& o, const std::array<T, N>& arr){
 }
 
 void CallbackSynchronizer::attitudeCallback(geometry_msgs::PoseStamped msg) {
+    ROS_INFO_STREAM("Received attitudes");
     std::array<double, 3> orientationEuler = eulerFromQuat(msg.pose.orientation);
     this->attitude = orientationEuler;
     std::cout << "The orientation in euler angles(XYZ)" << orientationEuler << '\n';
@@ -63,6 +64,7 @@ void CallbackSynchronizer::attitudeCallback(geometry_msgs::PoseStamped msg) {
 }
 
 void CallbackSynchronizer::altitudeCallback(std_msgs::Float64 msg) {
+    ROS_INFO_STREAM("Received altitude");
     this->altitude = msg.data;
 }
 
@@ -81,6 +83,8 @@ int main(int argc, char **argv){
 
     ros::init(argc, argv, "attitude_corrector");
     ros::NodeHandle n;
+
+    ROS_INFO_STREAM("Calback synchroniser starting to setup.");
 
     ros::Publisher rangesOut = n.advertise<teraranger_array::RangeArray>(rangesOutName, 1);
     CallbackSynchronizer cs = CallbackSynchronizer(rangesOut);
