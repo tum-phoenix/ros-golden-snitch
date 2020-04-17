@@ -35,6 +35,8 @@ teraranger_array::RangeArray getMessage(teraranger_array::RangeArray  old, std::
 }
 
 void CallbackSynchronizer::rangesCallback(teraranger_array::RangeArray msg) {
+    std::cout << "Received ranges\n";
+    ROS_WARN("Received new ranges\n");
     std::array<double, numOfRangeSensors> res{}; // = new std::array<double, numOfRangeSensors>();
     for (int i=0;i<msg.ranges.size();i++) {
         res[i] = msg.ranges[i].range;
@@ -66,6 +68,8 @@ void CallbackSynchronizer::altitudeCallback(std_msgs::Float64 msg) {
 
 CallbackSynchronizer::CallbackSynchronizer(ros::Publisher rangesOut) {
     this->rangesOut = rangesOut;
+    this->altitude = 10;
+    this->attitude = {0, 0, 0,};
 }
 
 

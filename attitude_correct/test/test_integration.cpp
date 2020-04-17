@@ -5,6 +5,7 @@
 
 #include "gtest/gtest.h"
 #include <ros/ros.h>
+#include <cstdint>
 
 #include <teraranger_array/RangeArray.h>
 #include <std_msgs/Header.h>
@@ -20,9 +21,9 @@
 const int numOfRangeSensors = 8;
 
 class CallbackContainer{
+public:
     CallbackContainer() : count(0){ }
 
-public:
     uint32_t count;
     teraranger_array::RangeArray lastMsg;
     void cb(teraranger_array::RangeArray msg)
@@ -38,17 +39,21 @@ protected:
     geometry_msgs::PoseStamped att_msg;
     std_msgs::Float64 alt_msg;
     ros::NodeHandle n;
-    CallbackContainer *cbc;
+    CallbackContainer cbc;
     virtual void SetUp() {
-        float ranges[8] = {1, 2, 1.5, 0.2, 0.7, 1.3, 0.2, 0.5};
+        cbc = CallbackContainer();
 
+        float ranges[8] = {1, 2, 1.5, 0.2, 0.7, 1.3, 0.2, 0.5};
 
         range_msg = teraranger_array::RangeArray();
         range_msg.header = std_msgs::Header();
         range_msg.header.stamp = ros::Time::now();
+        range_msg.ranges = std::vector<sensor_msgs::Range>();
         for (int i = 0; i< numOfRangeSensors;i++){
-            range_msg.ranges[i] = sensor_msgs::Range();
-            range_msg.ranges[i].header = range_msg.header;
+            sensor_msgs::Range rng = sensor_msgs::Range();
+            range_msg.ranges.push_back(rng);
+            range_msg.ranges[i].header = std_msgs::Header();
+            range_msg.ranges[i].header.stamp = ros::Time::now();
             range_msg.ranges[i].field_of_view = 0.1;
             range_msg.ranges[i].max_range = 2.3;
             range_msg.ranges[i].min_range = 0.1;
@@ -80,27 +85,28 @@ protected:
 
 };
 
-TEST_F(DistanceCorrectorTest, OneIsOne) {
-    ASSERT_EQ(1, 1);
-}
-
-TEST_F(DistanceCorrectorTest, NumOfRangeSensorsSet) {
-    ros::Subscriber sub_ranges = n.subscribe<teraranger_array::RangeArray>("phx_attitude_corrected_ranges", 1, &CallbackContainer::cb, cbc);
+TEST_F(DistanceCorrectorTest, IntegrationTest) {
+    ros::Subscriber sub_ranges = n.subscribe<teraranger_array::RangeArray>("phx_attitude_corrected_ranges", 1, &CallbackContainer::cb, &cbc);
     ros::Publisher pub_ranges = n.advertise<teraranger_array::RangeArray>("/multiflex_1/ranges_raw", 1);
     ros::Publisher pub_attitude = n.advertise<geometry_msgs::PoseStamped>("/mavros/local_position/pose", 1);
     ros::Publisher pub_altitude = n.advertise<std_msgs::Float64>("/mavros/global_position/rel_alt", 1);
 
+    ROS_INFO("Starting integration test.");
+    ASSERT_EQ(0, cbc.count);
     pub_ranges.publish(range_msg);
-    ros::Duration(0.1).sleep();
-    ASSERT_EQ(1, cbc->count);
-    ASSERT_EQ(range_msg, cbc->lastMsg);
+    for(unsigned long i = 0; i<2e9;i++){}
+    ros::Duration(1).sleep();
+    ASSERT_EQ(1, cbc.count);
+    ASSERT_EQ(range_msg, cbc.lastMsg);
 
     pub_altitude.publish(alt_msg);
     pub_attitude.publish(att_msg);
     pub_ranges.publish(range_msg);
     ros::Duration(0.1).sleep();
-    ASSERT_EQ(2, cbc->count);
-    ASSERT_EQ(range_msg, cbc->lastMsg);
+    ASSERT_EQ(2, cbc.count);
+    ASSERT_EQ(range_msg, cbc.lastMsg);
+
+
 
 
 }

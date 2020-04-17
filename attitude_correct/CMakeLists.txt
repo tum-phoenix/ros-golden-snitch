@@ -220,6 +220,8 @@ if(CATKIN_ENABLE_TESTING)
 #    include_directories(${PROJECT_NAME}-_int_test include)
 #    target_link_libraries(${PROJECT_NAME}_int_test ${PROJECT_NAME}_LIB)
   endif()
+  find_package(rostest REQUIRED)
+  add_rostest(test/attitude_corrector_int.test)
 
   ## Add folders to be run by python nosetests
   # catkin_add_nosetests(test)
