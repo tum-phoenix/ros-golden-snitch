@@ -201,7 +201,7 @@ install(TARGETS ${PROJECT_NAME}_node
 
 if(CATKIN_ENABLE_TESTING)
 #    find_package(rostest REQUIRED)
-#    add_rostest_gtest(${PROJECT_NAME}-test test/attitude_corrector.test test/distance_corrector_test.cpp)
+#    add_rostest_gtest(${PROJECT_NAME}-test test/attitude_corrector_int.test test/distance_corrector_test.cpp)
 ##    target_link_libraries(${PROJECT_NAME}-test ${catkin_LIBRARIES})
 #    include_directories(${PROJECT_NAME}-test include)
 
@@ -212,6 +212,13 @@ if(CATKIN_ENABLE_TESTING)
 #    target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
     include_directories(${PROJECT_NAME}-test include)
     target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME}_LIB)
+  endif()
+
+  catkin_add_executable_with_gtest(${PROJECT_NAME}_int_test test/test_integration.cpp)
+  if(TARGET ${PROJECT_NAME}_int_test)
+        target_link_libraries(${PROJECT_NAME}_int_test ${catkin_LIBRARIES})
+#    include_directories(${PROJECT_NAME}-_int_test include)
+#    target_link_libraries(${PROJECT_NAME}_int_test ${PROJECT_NAME}_LIB)
   endif()
 
   ## Add folders to be run by python nosetests
