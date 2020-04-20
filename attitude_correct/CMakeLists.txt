@@ -171,7 +171,7 @@ target_link_libraries(${PROJECT_NAME}_node
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_executables.html
 install(TARGETS ${PROJECT_NAME}_node
    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
- )
+        )
 
 ## Mark libraries for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_libraries.html
@@ -205,7 +205,8 @@ if(CATKIN_ENABLE_TESTING)
 ##    target_link_libraries(${PROJECT_NAME}-test ${catkin_LIBRARIES})
 #    include_directories(${PROJECT_NAME}-test include)
 
-  add_library(${PROJECT_NAME}_LIB src/distance_corrector.cpp)
+  add_library(${PROJECT_NAME}_LIB src/distance_corrector.cpp src/callback_synchronizer.cpp)
+  target_link_libraries(${PROJECT_NAME}_LIB ${catkin_LIBRARIES})
   ## Add gtest based cpp test target and link libraries
   catkin_add_gtest(${PROJECT_NAME}-test test/distance_corrector_test.cpp)
   if(TARGET ${PROJECT_NAME}-test)
@@ -216,9 +217,9 @@ if(CATKIN_ENABLE_TESTING)
 
   catkin_add_executable_with_gtest(${PROJECT_NAME}_int_test test/test_integration.cpp)
   if(TARGET ${PROJECT_NAME}_int_test)
-        target_link_libraries(${PROJECT_NAME}_int_test ${catkin_LIBRARIES})
+        target_link_libraries(${PROJECT_NAME}_int_test ${catkin_LIBRARIES} ${PROJECT_NAME}_LIB)
 #    include_directories(${PROJECT_NAME}-_int_test include)
-#    target_link_libraries(${PROJECT_NAME}_int_test ${PROJECT_NAME}_LIB)
+#        target_link_libraries(${PROJECT_NAME}_int_test ${PROJECT_NAME}_LIB)
   endif()
   find_package(rostest REQUIRED)
   add_rostest(test/attitude_corrector_int.test)

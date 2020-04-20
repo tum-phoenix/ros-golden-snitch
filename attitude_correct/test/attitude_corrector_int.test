@@ -1,4 +1,4 @@
 <launch>
-<!--    <node pkg="attitude_correct" type="attitude_correct_node" name="attitude_corrector" />-->
+    <node pkg="attitude_correct" type="attitude_correct_node" name="attitude_corrector" output="screen"/>
     <test test-name="int_test_attitude_correct" pkg="attitude_correct" type="attitude_correct_int_test" />
 </launch>

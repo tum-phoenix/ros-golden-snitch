@@ -46,7 +46,7 @@ void CallbackSynchronizer::rangesCallback(teraranger_array::RangeArray msg) {
     correctDistances(res,this->attitude,this->altitude, dirOfRangeSensors, correctRanges, seesFloor);
     teraranger_array::RangeArray out = getMessage(msg, correctRanges);
     this->rangesOut.publish(out);
-
+    ROS_INFO_STREAM("Published the corrected ranges.");
 }
 // Stolen from https://stackoverflow.com/questions/19152178/printing-an-stdarray
 template <class T, std::size_t N>
@@ -66,34 +66,49 @@ void CallbackSynchronizer::attitudeCallback(geometry_msgs::PoseStamped msg) {
 void CallbackSynchronizer::altitudeCallback(std_msgs::Float64 msg) {
     ROS_INFO_STREAM("Received altitude");
     this->altitude = msg.data;
+
+
 }
 
-CallbackSynchronizer::CallbackSynchronizer(ros::Publisher rangesOut) {
-    this->rangesOut = rangesOut;
+CallbackSynchronizer::CallbackSynchronizer(bool spin) {
+//    this->rangesOut = rangesOut;
     this->altitude = 10;
     this->attitude = {0, 0, 0,};
-}
 
-
-int main(int argc, char **argv){
     std::string attitudeTopicName  = "/mavros/local_position/pose";
     std::string altitudeTopicName = "/mavros/global_position/rel_alt";
     std::string rangesOutName = "phx_attitude_corrected_ranges";
     std::string rangesInName = "/multiflex_1/ranges_raw";
 
-    ros::init(argc, argv, "attitude_corrector");
+
     ros::NodeHandle n;
 
     ROS_INFO_STREAM("Calback synchroniser starting to setup.");
 
-    ros::Publisher rangesOut = n.advertise<teraranger_array::RangeArray>(rangesOutName, 1);
-    CallbackSynchronizer cs = CallbackSynchronizer(rangesOut);
-    CallbackSynchronizer* csp = &cs;
+    this->rangesOut = n.advertise<teraranger_array::RangeArray>(rangesOutName, 1);
+//    CallbackSynchronizer cs = CallbackSynchronizer(false);
+//    CallbackSynchronizer* csp = &cs;
 
-    ros::Subscriber rangesIn = n.subscribe(rangesInName, 1, &CallbackSynchronizer::rangesCallback, csp);
-    ros::Subscriber attitude = n.subscribe(attitudeTopicName, 1, &CallbackSynchronizer::attitudeCallback, csp);
-    ros::Subscriber altitude = n.subscribe(altitudeTopicName, 1, &CallbackSynchronizer::altitudeCallback, csp);
+    rangesIn = n.subscribe(rangesInName, 1, &CallbackSynchronizer::rangesCallback, this);
+    ROS_INFO_STREAM("Topic of ranges in: " << rangesIn.getTopic() << ".\n");
+    attitude_sub = n.subscribe(attitudeTopicName, 1, &CallbackSynchronizer::attitudeCallback, this);
+    altitude_sub = n.subscribe(altitudeTopicName, 1, &CallbackSynchronizer::altitudeCallback, this);
     ROS_INFO("Attitude_correct is now initialized");
-    ros::spin();
+    if (spin) {
+        ros::spin();
+    } else{
+        ros::spinOnce();
+    }
+}
+
+void startNode(bool spin) {
+
+}
+
+
+int main(int argc, char **argv){
+    ros::init(argc, argv, "attitude_corrector");
+//    startNode(false);
+    CallbackSynchronizer m = CallbackSynchronizer(true);
     return 0;
 }

@@ -19,7 +19,7 @@
 
 // TODO: Check what happens when the range sensor reading is out of range.
 
-const int numOfRangeSensors = 8;
+//const int numOfRangeSensors = 8;
 
 class CallbackContainer{
 public:
@@ -29,6 +29,7 @@ public:
     teraranger_array::RangeArray lastMsg;
     void cb(teraranger_array::RangeArray msg)
     {
+        ROS_INFO_STREAM("Received a msg in the testter.");
         ++count;
         lastMsg = msg;
     }
@@ -80,14 +81,11 @@ protected:
         alt_msg.data = 2.0;
 
     }
-
-
-
-
 };
 
 TEST_F(DistanceCorrectorTest, IntegrationTest) {
     ROS_INFO("Starting integration test.");
+//    CallbackSynchronizer m = CallbackSynchronizer(false);
     std::cout << "This is  where cout ends up.\n";
     ros::master::V_TopicInfo master_topics;
     ros::master::getTopics(master_topics);
@@ -102,12 +100,22 @@ TEST_F(DistanceCorrectorTest, IntegrationTest) {
     ros::Publisher pub_attitude = n.advertise<geometry_msgs::PoseStamped>("/mavros/local_position/pose", 3);
     ros::Publisher pub_altitude = n.advertise<std_msgs::Float64>("/mavros/global_position/rel_alt", 3);
 
+    ros::spinOnce();
+//    for(unsigned long i = 0; i<2e9;i++){}
+    ros::Duration(2).sleep();
+    ros::WallDuration(2).sleep();
 
+    ROS_INFO_STREAM("Number of ranges subscribers: " << pub_ranges.getNumSubscribers() << ". Topic: " << pub_ranges.getTopic() );
+    ROS_INFO_STREAM("Number of ranges in publishers: " << sub_ranges.getNumPublishers() << ". Topic: " << sub_ranges.getTopic());
+//    ROS_INFO_STREAM("Number of ranges in publishers in node under test: " << m.rangesIn.getNumPublishers() << ". Topic: " << m.rangesIn.getTopic());
 
     ASSERT_EQ(0, cbc.count);
     pub_ranges.publish(range_msg);
-    for(unsigned long i = 0; i<2e9;i++){}
-    ros::Duration(2).sleep();
+//    ros::spinOnce();
+//    for(unsigned long i = 0; i<2e9;i++){}
+    ros::Duration(0.1).sleep();
+//    ros::WallDuration(2).sleep();
+    ros::spinOnce();
     ASSERT_EQ(1, cbc.count);
     ASSERT_EQ(range_msg, cbc.lastMsg);
 
@@ -115,7 +123,9 @@ TEST_F(DistanceCorrectorTest, IntegrationTest) {
     pub_attitude.publish(att_msg);
     pub_ranges.publish(range_msg);
     ros::Duration(0.1).sleep();
+    ros::spinOnce();
     ASSERT_EQ(2, cbc.count);
+    range_msg.header.seq = cbc.lastMsg.header.seq;
     ASSERT_EQ(range_msg, cbc.lastMsg);
 
 
@@ -127,6 +137,7 @@ TEST_F(DistanceCorrectorTest, IntegrationTest) {
 int main(int argc, char** argv){
     testing::InitGoogleTest(&argc, argv);
     ros::init(argc, argv, "int_test_attitude_correct");
+
 //    main(argc, argv);
     return RUN_ALL_TESTS();
 }
