@@ -98,7 +98,7 @@ TEST_F(DistanceCorrectorTest, IntegrationTest) {
     ros::Publisher pub_attitude = n.advertise<geometry_msgs::PoseStamped>("/mavros/local_position/pose", 3);
     ros::Publisher pub_altitude = n.advertise<std_msgs::Float64>("/mavros/global_position/rel_alt", 3);
 
-    ros::Duration(1).sleep();
+    ros::Duration(0.5).sleep();
 
 
     ASSERT_EQ(0, cbc.count);
@@ -124,7 +124,5 @@ TEST_F(DistanceCorrectorTest, IntegrationTest) {
 int main(int argc, char **argv) {
     testing::InitGoogleTest(&argc, argv);
     ros::init(argc, argv, "int_test_attitude_correct");
-
-//    main(argc, argv);
     return RUN_ALL_TESTS();
 }

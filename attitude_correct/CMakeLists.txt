@@ -8,13 +8,13 @@ add_compile_options(-std=c++11)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  geometry_msgs
-  mavros
-  mavros_msgs
-  roscpp
-  std_msgs
-  teraranger_array
-)
+        geometry_msgs
+        mavros
+        mavros_msgs
+        roscpp
+        std_msgs
+        teraranger_array
+        )
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -106,10 +106,10 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES attitude_correct
-#  CATKIN_DEPENDS geometry_msgs mavros mavros_msgs roscpp std_msgs
-#  DEPENDS system_lib
+        #  INCLUDE_DIRS include
+        #  LIBRARIES attitude_correct
+        #  CATKIN_DEPENDS geometry_msgs mavros mavros_msgs roscpp std_msgs
+        #  DEPENDS system_lib
 )
 
 ###########
@@ -119,8 +119,8 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
-  ${catkin_INCLUDE_DIRS}
+        # include
+        ${catkin_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -150,8 +150,8 @@ add_executable(${PROJECT_NAME}_node src/distance_corrector.cpp include/attitude_
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(${PROJECT_NAME}_node
-   ${catkin_LIBRARIES}
- )
+        ${catkin_LIBRARIES}
+        )
 
 #############
 ## Install ##
@@ -170,7 +170,7 @@ target_link_libraries(${PROJECT_NAME}_node
 ## Mark executables for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_executables.html
 install(TARGETS ${PROJECT_NAME}_node
-   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
         )
 
 ## Mark libraries for installation
@@ -199,31 +199,32 @@ install(TARGETS ${PROJECT_NAME}_node
 ## Testing ##
 #############
 
-if(CATKIN_ENABLE_TESTING)
-#    find_package(rostest REQUIRED)
-#    add_rostest_gtest(${PROJECT_NAME}-test test/attitude_corrector_int.test test/distance_corrector_test.cpp)
-##    target_link_libraries(${PROJECT_NAME}-test ${catkin_LIBRARIES})
-#    include_directories(${PROJECT_NAME}-test include)
+if (CATKIN_ENABLE_TESTING)
+    #    find_package(rostest REQUIRED)
+    #    add_rostest_gtest(${PROJECT_NAME}-test test/attitude_corrector_int.test test/distance_corrector_test.cpp)
+    ##    target_link_libraries(${PROJECT_NAME}-test ${catkin_LIBRARIES})
+    #    include_directories(${PROJECT_NAME}-test include)
 
-  add_library(${PROJECT_NAME}_LIB src/distance_corrector.cpp src/callback_synchronizer.cpp)
-  target_link_libraries(${PROJECT_NAME}_LIB ${catkin_LIBRARIES})
-  ## Add gtest based cpp test target and link libraries
-  catkin_add_gtest(${PROJECT_NAME}-test test/distance_corrector_test.cpp)
-  if(TARGET ${PROJECT_NAME}-test)
-#    target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
-    include_directories(${PROJECT_NAME}-test include)
-    target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME}_LIB)
-  endif()
+    add_library(${PROJECT_NAME}_LIB src/distance_corrector.cpp src/callback_synchronizer.cpp)
+    target_link_libraries(${PROJECT_NAME}_LIB ${catkin_LIBRARIES})
+    ## Add gtest based cpp test target and link libraries
+    catkin_add_gtest(${PROJECT_NAME}-test test/distance_corrector_test.cpp)
+    if (TARGET ${PROJECT_NAME}-test)
+        include_directories(${PROJECT_NAME}-test include)
+        target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME}_LIB)
+    endif ()
 
-  catkin_add_executable_with_gtest(${PROJECT_NAME}_int_test test/test_integration.cpp)
-  if(TARGET ${PROJECT_NAME}_int_test)
-        target_link_libraries(${PROJECT_NAME}_int_test ${catkin_LIBRARIES} ${PROJECT_NAME}_LIB)
-#    include_directories(${PROJECT_NAME}-_int_test include)
-#        target_link_libraries(${PROJECT_NAME}_int_test ${PROJECT_NAME}_LIB)
-  endif()
-  find_package(rostest REQUIRED)
-  add_rostest(test/attitude_corrector_int.test)
+    #  catkin_add_executable_with_gtest(${PROJECT_NAME}_int_test test/test_integration.cpp)
+    #  if(TARGET ${PROJECT_NAME}_int_test)
+    #        target_link_libraries(${PROJECT_NAME}_int_test ${catkin_LIBRARIES})
+    #  endif()
+    #  find_package(rostest REQUIRED)
+    #  add_rostest(test/attitude_corrector_int.test)
 
-  ## Add folders to be run by python nosetests
-  # catkin_add_nosetests(test)
-endif()
+    find_package(rostest REQUIRED)
+    add_rostest_gtest(${PROJECT_NAME}_int_test test/attitude_corrector_int.test test/test_integration.cpp)
+    target_link_libraries(${PROJECT_NAME}_int_test ${catkin_LIBRARIES})
+
+    ## Add folders to be run by python nosetests
+    # catkin_add_nosetests(test)
+endif ()
