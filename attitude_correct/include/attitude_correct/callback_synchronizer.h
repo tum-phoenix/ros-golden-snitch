@@ -26,16 +26,16 @@ public:
     double altitude;
 
 public:
-    explicit CallbackSynchronizer(bool spin);
+    explicit CallbackSynchronizer();
+
     void rangesCallback(teraranger_array::RangeArray msg);
+
     void attitudeCallback(geometry_msgs::PoseStamped msg);
+
     void altitudeCallback(std_msgs::Float64 msg);
 
 
-
 };
-
-void startNode(bool spin);
 
 
 #endif //ATTITUDE_CORRECT_CALLBACK_SYNCHRONIZER_H

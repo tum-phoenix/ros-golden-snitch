@@ -6,7 +6,6 @@
 #include "gtest/gtest.h"
 #include <ros/ros.h>
 #include <cstdint>
-#include "attitude_correct/callback_synchronizer.h"
 
 #include <teraranger_array/RangeArray.h>
 #include <std_msgs/Header.h>
@@ -19,17 +18,16 @@
 
 // TODO: Check what happens when the range sensor reading is out of range.
 
-//const int numOfRangeSensors = 8;
+const int numOfRangeSensors = 8;
 
-class CallbackContainer{
+class CallbackContainer {
 public:
-    CallbackContainer() : count(0){ }
+    CallbackContainer() : count(0) {}
 
     uint32_t count;
     teraranger_array::RangeArray lastMsg;
-    void cb(teraranger_array::RangeArray msg)
-    {
-        ROS_INFO_STREAM("Received a msg in the testter.");
+
+    void cb(teraranger_array::RangeArray msg) {
         ++count;
         lastMsg = msg;
     }
@@ -42,6 +40,7 @@ protected:
     std_msgs::Float64 alt_msg;
     ros::NodeHandle n;
     CallbackContainer cbc;
+
     virtual void SetUp() {
         cbc = CallbackContainer();
 
@@ -51,7 +50,7 @@ protected:
         range_msg.header = std_msgs::Header();
         range_msg.header.stamp = ros::Time::now();
         range_msg.ranges = std::vector<sensor_msgs::Range>();
-        for (int i = 0; i< numOfRangeSensors;i++){
+        for (int i = 0; i < numOfRangeSensors; i++) {
             sensor_msgs::Range rng = sensor_msgs::Range();
             range_msg.ranges.push_back(rng);
             range_msg.ranges[i].header = std_msgs::Header();
@@ -85,36 +84,26 @@ protected:
 
 TEST_F(DistanceCorrectorTest, IntegrationTest) {
     ROS_INFO("Starting integration test.");
-//    CallbackSynchronizer m = CallbackSynchronizer(false);
-    std::cout << "This is  where cout ends up.\n";
     ros::master::V_TopicInfo master_topics;
     ros::master::getTopics(master_topics);
 
-    for (ros::master::V_TopicInfo::iterator it = master_topics.begin() ; it != master_topics.end(); it++) {
-        const ros::master::TopicInfo& info = *it;
+    for (ros::master::V_TopicInfo::iterator it = master_topics.begin(); it != master_topics.end(); it++) {
+        const ros::master::TopicInfo &info = *it;
         std::cout << "topic_" << it - master_topics.begin() << ": " << info.name << ", " << info.datatype << std::endl;
     }
 
-    ros::Subscriber sub_ranges = n.subscribe<teraranger_array::RangeArray>("phx_attitude_corrected_ranges", 3, &CallbackContainer::cb, &cbc);
+    ros::Subscriber sub_ranges = n.subscribe<teraranger_array::RangeArray>("phx_attitude_corrected_ranges", 3,
+                                                                           &CallbackContainer::cb, &cbc);
     ros::Publisher pub_ranges = n.advertise<teraranger_array::RangeArray>("/multiflex_1/ranges_raw", 3);
     ros::Publisher pub_attitude = n.advertise<geometry_msgs::PoseStamped>("/mavros/local_position/pose", 3);
     ros::Publisher pub_altitude = n.advertise<std_msgs::Float64>("/mavros/global_position/rel_alt", 3);
 
-    ros::spinOnce();
-//    for(unsigned long i = 0; i<2e9;i++){}
-    ros::Duration(2).sleep();
-    ros::WallDuration(2).sleep();
+    ros::Duration(1).sleep();
 
-    ROS_INFO_STREAM("Number of ranges subscribers: " << pub_ranges.getNumSubscribers() << ". Topic: " << pub_ranges.getTopic() );
-    ROS_INFO_STREAM("Number of ranges in publishers: " << sub_ranges.getNumPublishers() << ". Topic: " << sub_ranges.getTopic());
-//    ROS_INFO_STREAM("Number of ranges in publishers in node under test: " << m.rangesIn.getNumPublishers() << ". Topic: " << m.rangesIn.getTopic());
 
     ASSERT_EQ(0, cbc.count);
     pub_ranges.publish(range_msg);
-//    ros::spinOnce();
-//    for(unsigned long i = 0; i<2e9;i++){}
     ros::Duration(0.1).sleep();
-//    ros::WallDuration(2).sleep();
     ros::spinOnce();
     ASSERT_EQ(1, cbc.count);
     ASSERT_EQ(range_msg, cbc.lastMsg);
@@ -129,12 +118,10 @@ TEST_F(DistanceCorrectorTest, IntegrationTest) {
     ASSERT_EQ(range_msg, cbc.lastMsg);
 
 
-
-
 }
 
 
-int main(int argc, char** argv){
+int main(int argc, char **argv) {
     testing::InitGoogleTest(&argc, argv);
     ros::init(argc, argv, "int_test_attitude_correct");
 
