@@ -1,0 +1,5 @@
+# This file is intended to contain parameters we set in our code, but want to ba able to change easily.
+# E.g. thresholds, filter parameters, etc.
+#
+# If we want to change it at runtime, we have to use rosparam and dynamic_reconfigure.
+# Before adding something here, consider to make it a rosparam instead.
