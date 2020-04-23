@@ -1,0 +1,13 @@
+## This file is intended to store model parameters that describe physical properties of the drone.
+#
+# Remember to specify the unit and (if relevant) frame of reference.
+
+number_of_range_sensors : 8
+direction_of_range_sensors : [0, 45, 90, 135, 180, 225, 270, 315] # TODO: Get the correct ones.
+
+
+# Should be the geographical position of where we are flying the drone.
+# It is used by ardupilot for correcting the earth magnetic field.
+# Latitude, Longtitude, Altitude
+# TODO: Find the position of Munich
+operation_position : [-35.36294910983843, 149.16928445322435, 579.717312261560] # This is close to the standard position for the simulator tos start in.

@@ -1,6 +1,0 @@
-## This file is intended to store model parameters that describe physical properties of the drone.
-#
-# Remember to specify the unit and (if relevant) frame of reference.
-
-number_of_range_sensors = 8
-direction_of_range_sensors = [0, 45, 90, 135, 180, 225, 270, 315] # TODO: Get the correct ones.

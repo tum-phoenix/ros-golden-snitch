@@ -10,12 +10,17 @@ from std_msgs.msg import Header
 from mavros_msgs.msg import State as UAV_State
 import numpy as np
 
-
-
-OPERATION_POSITION = [-35.36294910983843, 149.16928445322435, 579.717312261560] # Latitude, Longtitude, Altitude TODO: Find the position of Munich
+# OPERATION_POSITION = [-35.36294910983843, 149.16928445322435, 579.717312261560] # Latitude, Longtitude, Altitude TODO: Find the position of Munich
+if OPERATION_POSITION is None: # TODO: Move this into the MavrosUAV class
+    with open("physical.yaml") as f:
+        mechanical_config = yaml.load(f, Loader=yaml.FullLoader)
+    OPERATION_POSITION = mechanical_config["operation_position"]
 
 class MavrosUAV:
     def __init__(self, block = True, initUAV=False):
+
+
+
         set_origin_topic_name = "/mavros/global_position/set_gp_origin"
         setpoint_vel_topic_name = "/mavros/setpoint_velocity/cmd_vel_unstamped"
         setpoint_pos_topic_name = "/mavros/setpoint_position/local"
