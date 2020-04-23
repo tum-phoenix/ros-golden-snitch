@@ -3,19 +3,20 @@ import time
 
 import mavros
 import rospy
+import rospkg
 from mavros_msgs.srv import  CommandTOL, CommandBool, CommandBoolRequest, SetMode, SetMavFrame
 from geographic_msgs.msg import GeoPointStamped, GeoPoint
 from geometry_msgs.msg import Twist, Vector3, PoseStamped, Pose, Point, Quaternion
 from std_msgs.msg import Header
 from mavros_msgs.msg import State as UAV_State
 import numpy as np
+import yaml
 
-# OPERATION_POSITION = [-35.36294910983843, 149.16928445322435, 579.717312261560] # Latitude, Longtitude, Altitude TODO: Find the position of Munich
 
 class MavrosUAV:
     def __init__(self, block = True, initUAV=False):
-
-        with open("physical.yaml") as f:
+        rospack = rospkg.RosPack()
+        with open(rospack.get_path("phx_launch")+"/../physical.yaml") as f:
             mechanical_config = yaml.load(f, Loader=yaml.FullLoader)
         self.OPERATION_POSITION = mechanical_config["operation_position"]
 
