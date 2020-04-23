@@ -1,133 +1,119 @@
 #!/usr/bin/env python
-import math
+import yaml
+import numpy as np
 
-class Decision_tree:
+HARDWARE_CONFIG = '../../../config/hardware_config.yaml'
+SOFTWARE_CONFIG = '../../../config/software_config.yaml'
+
+class DecisionTree:
+
+    def _read_config(self):
+        """
+        Reads the configuration from the config file and adds them to the tree
+        """
+        with open(HARDWARE_CONFIG, 'r') as f:
+            config = yaml.load(f, Loader=yaml.FullLoader)
+            sensor_angle = np.array(config['sensor_angle'])
+            # check if assumptions for the sensor positioning hold -> angle in expected range
+            assert 315 < sensor_angle[0] or sensor_angle[0] < 45
+            assert sum([45 * i < angle < (i+2) * 45 for i, angle in enumerate(sensor_angle[1:])]) == 7
+        with open(SOFTWARE_CONFIG, 'r') as f:
+            config = yaml.load(f, Loader=yaml.FullLoader)
+            self.obstacle_threshold = config['obstacle_threshold']
+            self.human_threshold = config['human_threshold']
+            self.flee_dist = config['flee_dist']
 
     def __init__(self):
-        self.LastPosHuman = [0, 0]
+        self.current_distances = None
+        self.current_dir_human = None
+        self.current_dist_human = None
+        self.pos = [0.0, 0.0]
+        self.yaw = [0.0, 0.0]
+        self._read_config()
 
-        self.Human_detected = False
-        self.Wall_detected = 1
-        self.Wall_left = 1  # I was thinking of making a 2 dimensional array later so we can work with more exact coordinates of the wall
-        self.Wall_right = 1
-        self.Wall_inFront = 1
-        self.Wall_behind = 1
-        self.Sensor_ancle_positioning = [0, 45, 90, 135, 180, 225, 270, 315]
+    def update_perception(self, distances, dir_human, dist_human):
+        """
+        Returns a python list of length 4 on the format : [vel_x, vel_y, vel_z, yaw] in the local frame. Yaw is in degrees
+        dir_human, distances, dist_human 2-dimensional array
+        Distances is a 8th dimensional array consisting of the measurments of the 8 sensors
 
-    # @returns : a python list of length 4 on the format : [vel_x, vel_y, vel_z, yaw] in the local frame. Yaw is in degrees
-    # dir_human, distances, dist_human 2-dimensional array
-    # distances is a 8th dimensional array consisting of the measurments of the 8 sensors
-    def update(self, distances, dir_human, dist_human):  # this takes all inputs from all sensors etc.
-
-        # case = 0 => No human detected
-        # case = 1 => human is close
-        # case = 2 => human is far away
-        # case = 3 => wall detected
-        # case = 4 => nothing detected
-
-        newPos = [0, 0]  # We support for now only 2D movement
-        yaw = 0
-
-        # case 0
-        if dist_human < 0:
-            self.human_not_detected(distances, yaw)
+        case = 0 => No human detected 
+        case = 1 => human is close
+        case = 2 => human is far away
+        """
+        
+        # update perception
+        self.current_distances = distances
+        self.current_dir_human = dir_human
+        self.dist_human = dist_human
+        
+        # decide action
+        if dist_human == -1:
+            # case 0
+            self.search_for_human()
+        elif self.is_to_close():
+            # case 1
+               self.flee()
         else:
-            # deciding in human_detected() if it's case 1, 2 or 3
-            self.human_detected(distances, dir_human, dist_human, yaw)
+            # case 2
+            self.adjust_yaw()
 
+        return [self.pos, self.yaw]
+    
+    def is_to_close(self):
+        """
+        Checks if the human is to close to the drone
+        """
+        return self.current_dist_human <= self.human_threshold
 
-        self.decision(distances, yaw)
+    def flee():
+        """
+        Flee from human (backwards). Consider envirnment. 
+        """
+        self.adjust_yaw() #TODO ensure that vertical adjustment is ignored 
+        # ignore sensors that are directed forwards
+        distances = np.array(self.current_distances[2:7])
+        # filter out of range values TODO check if the values get negatve
+        distances = np.where(distances < 0, distances, np.inf)
 
-        # Yaw is controlled independently of the other movements
+        # get correction distance to the sides
+        avoidance_vec = np.sin(self.sensor_angle[2:7] -180) * distances
+        # positive -> obstacle to the left, negatove -> obstacle to the right
 
-        return [newPos[0], newPos[1], 0, yaw]
-	
-	def closestDist(distances):
-		closestIndex, closestLength = -1, -1
-		for (i, dist) in enumerate(distances):
-			if closestLength < dist:
-				closestIndex = i
-				closestLength = dist
-		return closestLength
+        left_mask = np.logical_and(self.obstacle_threshold > avoidance_vec, avoidance_vec > 0)
+        right_mask = np.logical_and(-self.obstacle_threshold < avoidance_vec, avoidance_vec < 0)
+        
+        min_dist_left = np.where(left_mask, avoidance_vec, np.inf).min()
+        min_dist_right = np.where(right_mask, avoidance_vec, -np.inf).max()
+        
+        # positive -> move right, negative -> move left
+        if min_dist_left != np.inf and min_dist_right != -np.inf:
+            #traped
+            raise NotImplementedError()
+        elif min_dist_left != np.inf:
+            # move right
+            correction = self.obstacle_threshold - min_dist_left
+        elif min_dist_right != -np.inf:
+            # move left
+            correction = -(self.obstacle_threshold + min_dist_right)
+        else:
+            correction = 0
+        
+        # check for obstacle behind
+        avoidance_vec = np.cos(self.sensor_angle[3:6] -180) * distances[1:-1]
+        if np.any(avoidance_vec <= self.obstacle_threshold):
+            # stop -> TODO: check expected behaviour
+            correction = (correction, 0)
+        else:
+            correction = (correction, self.flee_dist)
 
-
-	def human_detected():
-		if cosesestDist(distances) < 1:
-			human_detected_wall_close()
-		elif closesestDist(distances) < 2:
-			human_detecded_medium_far()
-		elif closestDist(distances) < 10:
-			# human_detected_far()
-			newDir = -dir_human
-			vel_x = math.arccos(dir_human)  # Not sure if arccos
-			vel_y = math.arcsin(dir_human)  # Not sure if arcsin
-		
-		def human_not_detected(self, distances, yaw):
-			self.Human_detected = 0
-			self.lastDirHuman = human_dir
-			yaw = self.lastDirHuman
-
-
-	def human_detected(self, distances, yaw):
-		self.Human_detected = 1
-		yaw = - dir_human  # TODO: Test if this is the correct sign
-
-
-	def check_if_a_wall_is_near(self, distances):
-		i = 0
-		while (i < 9):
-			if distances[i] > 0:# and i <: TODO ?
-				self.Wall_detected = 0
-				break
-		if self.Wall_detected == 0:  # Wall detected
-			pass
-
-	def decision(self, distances,
-				 yaw): 
-		# decision returns a new position & changes in the yaw there is no randomness in the algorithm
-		if (self.Human_detected):
-			if (distances[4] < 0):  # no wall detected behind the drone: by default we fly backwards
-				return
-			elif (distances[4] > 0 and distances[2] < 0):  # no wall detected on our right
-				return
-			elif (distances[4] > 0 and distances[2] > 0 and distances[6] < 0):  # only left is an option
-				return
-			elif (distances[4] > 0 and distances[2] > 0 and distances[6] > 0 and distamces[
-					1] < 0):  # we don't fly forwards because the human only can be in front of us (detected by camera)
-				return
-			elif (distances[4] > 0 and distances[2] > 0 and distances[6] > 0 and distances[1] > 0 and distances[3] < 0):
-				return
-			elif (distances[4] > 0 and distances[2] > 0 and distances[6] > 0 and distances[1] > 0 and distances[3] > 0 and
-				  distances[5] < 0):
-				return
-			elif (distances[4] > 0 and distances[2] > 0 and distances[6] > 0 and distances[1] > 0 and distances[3] > 0 and
-				  distances[5] > 0 and distances[7] < 0):
-				return
-			else:  # no option left
-				return
-		else:  
-			# no human detected, we are looking for the human -> change yaw. 
-			# I was thinking that it might be interesting to know in which case we were 
-			# before we are turning to the last position we knew about the human. 
-			# For example: if we were only flying backwards the yaw would be 0. 
-			# Then we need to search for the human.
-			self.LastPosHuman
-
-	def human_detected_wall_close(self):
-		raise NotImplementedError()
-
-	def human_detecded_medium_far(self):
-		raise NotImplementedError()
-		
-def main():
-    dc = Decision_tree()
-    dc.update([2, 2, 2, 2, 1, 2, 1], [0, 0.2], 1.2)
-    res = dc.update([2, 2, 2, 2, 1, 2, 1], [0, 0.2], 1.2)
-    if res == [0, 3, 1, 2]:
-        print("Test correct")
-    else:
-        print("Test failed")
-
-
-if __name__ == '__main__':
-    main()
+        self.pos = correction        
+    
+    def adjust_yaw(self):
+        """
+        Adjust the current yaw based on the human direction
+        """
+        self.yaw = -self.human_dir
+    
+    def search_for_human(self):
+        raise NotImplementedError()

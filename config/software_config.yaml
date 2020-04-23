@@ -1,0 +1,3 @@
+human_threshold: 2.0
+obstacle_threshold: 1.0
+flee_dist: -2.0
