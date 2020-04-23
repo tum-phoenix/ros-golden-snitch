@@ -11,15 +11,13 @@ from mavros_msgs.msg import State as UAV_State
 import numpy as np
 
 # OPERATION_POSITION = [-35.36294910983843, 149.16928445322435, 579.717312261560] # Latitude, Longtitude, Altitude TODO: Find the position of Munich
-if OPERATION_POSITION is None: # TODO: Move this into the MavrosUAV class
-    with open("physical.yaml") as f:
-        mechanical_config = yaml.load(f, Loader=yaml.FullLoader)
-    OPERATION_POSITION = mechanical_config["operation_position"]
 
 class MavrosUAV:
     def __init__(self, block = True, initUAV=False):
 
-
+        with open("physical.yaml") as f:
+            mechanical_config = yaml.load(f, Loader=yaml.FullLoader)
+        self.OPERATION_POSITION = mechanical_config["operation_position"]
 
         set_origin_topic_name = "/mavros/global_position/set_gp_origin"
         setpoint_vel_topic_name = "/mavros/setpoint_velocity/cmd_vel_unstamped"
@@ -84,9 +82,9 @@ class MavrosUAV:
         origin.header = Header()
         origin.header.stamp = rospy.Time.now()
         origin.position = GeoPoint()
-        origin.position.latitude = OPERATION_POSITION[0]
-        origin.position.longitude = OPERATION_POSITION[1]
-        origin.position.altitude = OPERATION_POSITION[2]
+        origin.position.latitude = self.OPERATION_POSITION[0]
+        origin.position.longitude = self.OPERATION_POSITION[1]
+        origin.position.altitude = self.OPERATION_POSITION[2]
         self.set_origin_pub.publish(origin)
         if verbose:
             print("Published ",origin)
@@ -131,7 +129,7 @@ class MavrosUAV:
         # TODO: Check if armed
         self.arm(verbose)
 
-        success = self.takeoff_srv(min_pitch=0.0, yaw=0.0,latitude=OPERATION_POSITION[0], longitude=OPERATION_POSITION[1], altitude=altitude)
+        success = self.takeoff_srv(min_pitch=0.0, yaw=0.0,latitude=self.OPERATION_POSITION[0], longitude=self.OPERATION_POSITION[1], altitude=altitude)
         if verbose:
             print("Result of takeoff", success)
         if block:
@@ -140,7 +138,7 @@ class MavrosUAV:
 
     # block is True if the call should block until the UAV is landed.
     def land(self, block=True, verbose=False):
-        success = self.land_srv(min_pitch=0.0, yaw=0.0,latitude=OPERATION_POSITION[0], longitude=OPERATION_POSITION[1], altitude=1)
+        success = self.land_srv(min_pitch=0.0, yaw=0.0,latitude=self.OPERATION_POSITION[0], longitude=self.OPERATION_POSITION[1], altitude=1)
         if verbose:
             print("Result of landing", success)
         return success
