@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import yaml
 import numpy as np
+import os
+import 
 
 HARDWARE_CONFIG = '../../../config/hardware_config.yaml'
 SOFTWARE_CONFIG = '../../../config/software_config.yaml'
@@ -22,10 +24,11 @@ class DecisionTree:
             self.obstacle_threshold = config['obstacle_threshold']
             self.human_threshold = config['human_threshold']
             self.flee_dist = config['flee_dist']
+            self.search_rotation = config['search_rotation']
 
     def __init__(self):
         self.current_distances = None
-        self.current_dir_human = None
+        self.last_direction = None
         self.current_dist_human = None
         self.pos = [0.0, 0.0]
         self.yaw = [0.0, 0.0]
@@ -43,8 +46,12 @@ class DecisionTree:
         """
         
         # update perception
+        assert isinstance(distances, np.ndarray), f'Expected distances to be of type ndarray but got {type(distances)}'
         self.current_distances = distances
-        self.current_dir_human = dir_human
+        if self.current_dist_human < 0: # TODO check if assumption holds
+            # human detected -> save direction if human is lost
+            assert isinstance(dir_human, np.ndarray), f'Expected dir_human to be of type ndarray but got {type(dir_human)}'
+            self.last_direction = dir_human
         self.dist_human = dist_human
         
         # decide action
@@ -72,7 +79,7 @@ class DecisionTree:
         """
         self.adjust_yaw() #TODO ensure that vertical adjustment is ignored 
         # ignore sensors that are directed forwards
-        distances = np.array(self.current_distances[2:7])
+        distances = self.current_distances[2:7]
         # filter out of range values TODO check if the values get negatve
         distances = np.where(distances < 0, distances, np.inf)
 
@@ -88,7 +95,7 @@ class DecisionTree:
         
         # positive -> move right, negative -> move left
         if min_dist_left != np.inf and min_dist_right != -np.inf:
-            #traped
+            # constriction
             raise NotImplementedError()
         elif min_dist_left != np.inf:
             # move right
@@ -102,7 +109,7 @@ class DecisionTree:
         # check for obstacle behind
         avoidance_vec = np.cos(self.sensor_angle[3:6] -180) * distances[1:-1]
         if np.any(avoidance_vec <= self.obstacle_threshold):
-            # stop -> TODO: check expected behaviour
+            # TODO: check expected movement
             correction = (correction, 0)
         else:
             correction = (correction, self.flee_dist)
@@ -116,4 +123,8 @@ class DecisionTree:
         self.yaw = -self.human_dir
     
     def search_for_human(self):
-        raise NotImplementedError()
+        """
+        Adjust the yaw.
+        Sets the roation to 90 in the last direction of the human
+        """
+        self.yaw = -np.sign(self.last_direction) * self.search_rotation
