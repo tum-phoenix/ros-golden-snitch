@@ -30,12 +30,14 @@ class MavrosUAV:
         ref_frame_vel_srv_name = "/mavros/setpoint_velocity/mav_frame"
 
         self.uav_state = 0
+        self.currentPose = Pose()
 
         self.set_origin_pub = rospy.Publisher(set_origin_topic_name, GeoPointStamped, queue_size=10)
         self.set_vel_pub = rospy.Publisher(setpoint_vel_topic_name, Twist, queue_size=2)
         self.set_pos_pub = rospy.Publisher(setpoint_pos_topic_name, PoseStamped, queue_size=2)
 
         self.uav_state_sub = rospy.Subscriber("/mavros/state", UAV_State, self.__uav_state_handler)
+        self.pose_sub = rospy.Subscriber("/mavros/local_position/pose", PoseStamped, self.__pose_handler)
 
         print("Waiting for service setmode")
         rospy.wait_for_service(set_mode_srvname)
@@ -65,6 +67,10 @@ class MavrosUAV:
 
     def __uav_state_handler(self, state_msg):
         self.uav_state = state_msg.system_status # It did not work
+
+    def __pose_handler(self, pose_msg):
+        self.currentPose = pose_msg.pose
+
 
     def init_uav(self, arm=False, takeoff=False, verbose=False):
         if verbose:
@@ -149,18 +155,22 @@ class MavrosUAV:
         self.set_vel_pub.publish(new_vel)
         print("Sendt setpoint ", new_vel)
 
-    def set_pos_setpoint(self, pos, rot):
+    def set_pos_setpoint(self, relpos, relrot):
+        print("Current pos:", self.currentPose.position)
+        print("Rel pos:", relpos)
+        pos = [relpos[0] + self.currentPose.position.x, relpos[1] + self.currentPose.position.y, relpos[2] + self.currentPose.position.z]
         newPose = PoseStamped()
         newPose.header = Header()
         newPose.header.stamp = rospy.Time.now()
         newPose.pose = Pose()
         newPose.pose.position = Point(*pos)
-        quat = euler_to_quaternion(*rot)
-        newPose.pose.orientation = Quaternion(quat[0], quat[1], quat[2], quat[3])
+        relquat = euler_to_quaternion(*relrot)
+        curquat = [self.currentPose.orientation.w, self.currentPose.orientation.x, self.currentPose.orientation.y, self.currentPose.orientation.z]
+        quat = quaternion_multiply(curquat, relquat)
+        newPose.pose.orientation = Quaternion(quat[1], quat[2], quat[3], quat[0])
         self.set_pos_pub.publish(newPose)
 
 def euler_to_quaternion(roll, pitch, yaw):
-
     qx = np.sin(roll / 2) * np.cos(pitch / 2) * np.cos(yaw / 2) - np.cos(roll / 2) * np.sin(pitch / 2) * np.sin(
         yaw / 2)
     qy = np.cos(roll / 2) * np.sin(pitch / 2) * np.cos(yaw / 2) + np.sin(roll / 2) * np.cos(pitch / 2) * np.sin(
@@ -170,4 +180,14 @@ def euler_to_quaternion(roll, pitch, yaw):
     qw = np.cos(roll / 2) * np.cos(pitch / 2) * np.cos(yaw / 2) + np.sin(roll / 2) * np.sin(pitch / 2) * np.sin(
         yaw / 2)
 
-    return [qx, qy, qz, qw]
+    return [qw, qx, qy, qz]
+
+def quaternion_multiply(quaternion1, quaternion0):
+    w0, x0, y0, z0 = quaternion0
+    w1, x1, y1, z1 = quaternion1
+    return np.array([-x1 * x0 - y1 * y0 - z1 * z0 + w1 * w0,
+                     x1 * w0 + y1 * z0 - z1 * y0 + w1 * x0,
+                     -x1 * z0 + y1 * w0 + z1 * x0 + w1 * y0,
+                     x1 * y0 - y1 * x0 + z1 * w0 + w1 * z0], dtype=np.float64)
+
+

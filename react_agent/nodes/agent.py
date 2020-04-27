@@ -25,7 +25,11 @@ class Server:
 
         self.ai = Decision()
 
-        self.pub = rospy.Publisher("phx/setpoint", Twist, queue_size=1)
+        # For velocities
+        # self.pub = rospy.Publisher("phx/setpoint", Twist, queue_size=1)
+
+        # For positions
+        self.pub = rospy.Publisher("phx/setpoint/pos", PoseStamped, queue_size=1) # "/mavros/setpoint_position/local"
 
 
     def human_tracking_callback(self, msg):

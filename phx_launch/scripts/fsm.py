@@ -30,13 +30,19 @@ class Fsm:
 
         self.land_sub = rospy.Subscriber("phx/land", Empty, self.land_handler)
         self.takeoff_sub = rospy.Subscriber("phx/takeoff", Empty, self.takeoff_handler)
-        self.control_input_sub = rospy.Subscriber("phx/setpoint", Twist,)
+        self.control_input_pos_sub = rospy.Subscriber("phx/setpoint/pos", PoseStamped, self.control_pos_handler)
         # self.pose_sub = rospy.Subscriber("/mavros/local_position/pose", PoseStamped, self.altitude_handler) # To check if we have reached the desired altitude to change state.
         self.uav_state_sub = rospy.Subscriber("/mavros/state", UAV_State, self.uav_state_handler)
         self.imu_sub = rospy.Subscriber("/mavros/imu/data", Imu, self.imu_handler)
         self.alt_sub = rospy.Subscriber("/mavros/global_position/rel_alt", Float64, self.altitude_handler)
+        self.pose_sub = rospy.Subscriber("/mavros/local_position/pose", PoseStamped, self.pose_handler)
+
 
         self.vel_pub = rospy.Publisher("/mavros/setpoint_velocity/cmd_vel_unstamped", Twist, queue_size=2)
+        self.pos_pub = rospy.Publisher("/mavros/setpoint_position/local", PoseStamped, queue_size=2)
+
+        self.current_pos = [0, 0, 0] # x, y, z
+        self.current_rot = [0, 0, 0, 0] # x, y, z, w
 
 
 
@@ -66,9 +72,15 @@ class Fsm:
             #     self.UAV.disarm()
             #     self.new_state(States.IDLE)
 
-    def control_handler(self, cmd_msg):
+    # If we want to return to velocity control
+    def control_vel_handler(self, cmd_msg):
         if self.state == States.FLYING:
             self.vel_pub.publish(cmd_msg)
+
+    # The one we use while we do position control
+    def control_pos_handler(self, cmd_msg):
+        if self.state == States.FLYING:
+            self.pos_pub.publish(cmd_msg)
 
 
     def uav_state_handler(self, uav_state_msg):
@@ -92,6 +104,11 @@ class Fsm:
 
             else:
                 self.num_of_imu_msgs_upside_down = 0
+
+    def pose_handler(self, pose_msg):
+        self.current_pos = [pose_msg.pose.position.x, pose_msg.pose.position.y, pose_msg.pose.position.z]
+
+
 
     def set_state(self, nState : States, txtMsg=""):
         rospy.loginfo("Changing state from "+str(self.state)+ " to "+ str(nState)+". "+txtMsg)
