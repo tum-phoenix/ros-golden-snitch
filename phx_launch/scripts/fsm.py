@@ -4,7 +4,7 @@ import rospy
 import mavrosInterface as mavrosInterface
 from enum import Enum
 from std_msgs.msg import Empty, Float64
-from geometry_msgs.msg import PoseStamped, Twist
+from geometry_msgs.msg import PoseStamped, Twist, Pose, Point, Quaternion
 from mavros_msgs.msg import State as UAV_State
 from sensor_msgs.msg import Imu
 
@@ -41,8 +41,7 @@ class Fsm:
         self.vel_pub = rospy.Publisher("/mavros/setpoint_velocity/cmd_vel_unstamped", Twist, queue_size=2)
         self.pos_pub = rospy.Publisher("/mavros/setpoint_position/local", PoseStamped, queue_size=2)
 
-        self.current_pos = [0, 0, 0] # x, y, z
-        self.current_rot = [0, 0, 0, 0] # x, y, z, w
+        self.current_pose = Pose()
 
 
 
@@ -80,7 +79,23 @@ class Fsm:
     # The one we use while we do position control
     def control_pos_handler(self, cmd_msg):
         if self.state == States.FLYING:
-            self.pos_pub.publish(cmd_msg)
+
+            # self.pos_pub.publish(cmd_msg)
+
+            pos = [cmd_msg.pose.position.x + self.current_pose.position.x, cmd_msg.pose.position.y + self.current_pose.position.y,
+                   cmd_msg.pose.position.z + self.current_pose.position.z]
+            # newPose = PoseStamped()
+            # newPose.header = Header()
+            # newPose.header.stamp = rospy.Time.now()
+            # newPose.pose = Pose()
+            cmd_msg.pose.position = Point(*pos)
+            # relquat = mavrosInterface.euler_to_quaternion(*relrot)
+            relquat = [cmd_msg.pose.orientation.w, cmd_msg.pose.orientation.x, cmd_msg.pose.orientation.y, cmd_msg.pose.orientation.z]
+            curquat = [self.current_pose.orientation.w, self.current_pose.orientation.x, self.current_pose.orientation.y,
+                       self.current_pose.orientation.z]
+            quat = mavrosInterface.quaternion_multiply(curquat, relquat)
+            cmd_msg.pose.orientation = Quaternion(quat[1], quat[2], quat[3], quat[0])
+            self.set_pos_pub.publish(cmd_msg)
 
 
     def uav_state_handler(self, uav_state_msg):
@@ -106,7 +121,7 @@ class Fsm:
                 self.num_of_imu_msgs_upside_down = 0
 
     def pose_handler(self, pose_msg):
-        self.current_pos = [pose_msg.pose.position.x, pose_msg.pose.position.y, pose_msg.pose.position.z]
+        self.current_pose = pose_msg.pose
 
 
 

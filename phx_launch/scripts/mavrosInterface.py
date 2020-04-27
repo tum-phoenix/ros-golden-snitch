@@ -156,8 +156,8 @@ class MavrosUAV:
         print("Sendt setpoint ", new_vel)
 
     def set_pos_setpoint(self, relpos, relrot):
-        print("Current pos:", self.currentPose.position)
-        print("Rel pos:", relpos)
+        # print("Current pos:", self.currentPose.position)
+        # print("Rel pos:", relpos)
         pos = [relpos[0] + self.currentPose.position.x, relpos[1] + self.currentPose.position.y, relpos[2] + self.currentPose.position.z]
         newPose = PoseStamped()
         newPose.header = Header()
