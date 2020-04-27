@@ -40,6 +40,7 @@ class Fsm:
 
         self.vel_pub = rospy.Publisher("/mavros/setpoint_velocity/cmd_vel_unstamped", Twist, queue_size=2)
         self.pos_pub = rospy.Publisher("/mavros/setpoint_position/local", PoseStamped, queue_size=2)
+        # TODO: Might be tat we need to use http://docs.ros.org/api/mavros_msgs/html/msg/PositionTarget.html and  /mavros/setpoint_raw/target_local instead. :(
 
         self.current_pose = Pose()
 
@@ -81,7 +82,7 @@ class Fsm:
         if self.state == States.FLYING:
 
             # self.pos_pub.publish(cmd_msg)
-
+            print("relPos:", cmd_msg.pose.position)
             pos = [cmd_msg.pose.position.x + self.current_pose.position.x, cmd_msg.pose.position.y + self.current_pose.position.y,
                    cmd_msg.pose.position.z + self.current_pose.position.z]
             # newPose = PoseStamped()
@@ -95,7 +96,8 @@ class Fsm:
                        self.current_pose.orientation.z]
             quat = mavrosInterface.quaternion_multiply(curquat, relquat)
             cmd_msg.pose.orientation = Quaternion(quat[1], quat[2], quat[3], quat[0])
-            self.set_pos_pub.publish(cmd_msg)
+            print("Respos:", cmd_msg.pose.position)
+            self.pos_pub.publish(cmd_msg)
 
 
     def uav_state_handler(self, uav_state_msg):
