@@ -2,24 +2,26 @@
 import yaml
 import numpy as np
 import os
-import 
+import rospkg 
 
-HARDWARE_CONFIG = '../../../config/hardware_config.yaml'
-SOFTWARE_CONFIG = '../../../config/software_config.yaml'
+HARDWARE_CONFIG = '../config/hardware_config.yaml'
+SOFTWARE_CONFIG = '../config/software_config.yaml'
 
-class DecisionTree:
+class Decision:
 
     def _read_config(self):
         """
         Reads the configuration from the config file and adds them to the tree
         """
-        with open(HARDWARE_CONFIG, 'r') as f:
+        rospack = rospkg.RosPack()
+        path = rospack.get_path('react_agent') + os.path.sep
+        with open(path + HARDWARE_CONFIG, 'r') as f:
             config = yaml.load(f, Loader=yaml.FullLoader)
             sensor_angle = np.array(config['sensor_angle'])
             # check if assumptions for the sensor positioning hold -> angle in expected range
             assert 315 < sensor_angle[0] or sensor_angle[0] < 45
             assert sum([45 * i < angle < (i+2) * 45 for i, angle in enumerate(sensor_angle[1:])]) == 7
-        with open(SOFTWARE_CONFIG, 'r') as f:
+        with open(path + SOFTWARE_CONFIG, 'r') as f:
             config = yaml.load(f, Loader=yaml.FullLoader)
             self.obstacle_threshold = config['obstacle_threshold']
             self.human_threshold = config['human_threshold']

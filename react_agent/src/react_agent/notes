@@ -1,3 +1,0 @@
-1. Non-global variables has to be lower-case, even object instances. 
-2. Do not use "self" in a static function. This does not follow the object oriented concept. If you want a function that specifically modify an object then defined that function in the object class. If you want to define a general static function then rename the parameter.
-3. In python if you want to document a function you write it as a string at the beginning of function. Do not assing that string to a variable. The interpreter will then assign that string to func.__doc__ of the specific function. This way python environemts can access that string and display it when using the function. It is further used for generating documentations.
