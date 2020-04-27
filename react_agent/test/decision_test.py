@@ -1,5 +1,7 @@
+#!/usr/bin/env python3
 import unittest
 import numpy as np
+from src.react_agent.decision import Decision
 
 PKG = 'react_agent'
 
