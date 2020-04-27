@@ -7,6 +7,9 @@ import rospkg
 HARDWARE_CONFIG = '../config/hardware_config.yaml'
 SOFTWARE_CONFIG = '../config/software_config.yaml'
 
+def get_rad(x):
+    return np.pi * x/180
+
 class Decision:
 
     def _read_config(self):
@@ -14,13 +17,11 @@ class Decision:
         Reads the configuration from the config file and adds them to the tree
         """
         rospack = rospkg.RosPack()
+        #path = '../'
         path = rospack.get_path('react_agent') + os.path.sep
         with open(path + HARDWARE_CONFIG, 'r') as f:
             config = yaml.load(f, Loader=yaml.FullLoader)
-            sensor_angle = np.array(config['sensor_angle'])
-            # check if assumptions for the sensor positioning hold -> angle in expected range
-            assert 315 < sensor_angle[0] or sensor_angle[0] < 45
-            assert sum([45 * i < angle < (i+2) * 45 for i, angle in enumerate(sensor_angle[1:])]) == 7
+            self.sensor_angle = get_rad(np.array(config['sensor_angle']))
         with open(path + SOFTWARE_CONFIG, 'r') as f:
             config = yaml.load(f, Loader=yaml.FullLoader)
             self.obstacle_threshold = config['obstacle_threshold']
@@ -29,9 +30,9 @@ class Decision:
             self.search_rotation = config['search_rotation']
 
     def __init__(self):
-        self.current_distances = None
+        self.current_distances = None 
         self.last_direction = None
-        self.current_dist_human = None
+        self.current_dist_human = -np.inf
         self.pos = [0.0, 0.0]
         self.yaw = [0.0, 0.0]
         self._read_config()
@@ -50,19 +51,20 @@ class Decision:
         # update perception
         assert isinstance(distances, np.ndarray), f'Expected distances to be of type ndarray but got {type(distances)}'
         self.current_distances = distances
-        if self.current_dist_human < 0: # TODO check if assumption holds
+        # TODO check if assumption holds
+        if self.current_dist_human < 0:             
             # human detected -> save direction if human is lost
             assert isinstance(dir_human, np.ndarray), f'Expected dir_human to be of type ndarray but got {type(dir_human)}'
             self.last_direction = dir_human
-        self.dist_human = dist_human
+        self.current_dist_human = dist_human
         
         # decide action
-        if dist_human == -1:
+        if self.current_dist_human == -1:
             # case 0
             self.search_for_human()
         elif self.is_to_close():
             # case 1
-               self.flee()
+            self.flee()
         else:
             # case 2
             self.adjust_yaw()
@@ -75,23 +77,28 @@ class Decision:
         """
         return self.current_dist_human <= self.human_threshold
 
-    def flee():
+    def flee(self):
         """
         Flee from human (backwards). Consider envirnment. 
         """
         self.adjust_yaw() #TODO ensure that vertical adjustment is ignored 
         # ignore sensors that are directed forwards
         distances = self.current_distances[2:7]
-        # filter out of range values TODO check if the values get negatve
-        distances = np.where(distances < 0, distances, np.inf)
-
         # get correction distance to the sides
-        avoidance_vec = np.sin(self.sensor_angle[2:7] -180) * distances
-        # positive -> obstacle to the left, negatove -> obstacle to the right
-
-        left_mask = np.logical_and(self.obstacle_threshold > avoidance_vec, avoidance_vec > 0)
-        right_mask = np.logical_and(-self.obstacle_threshold < avoidance_vec, avoidance_vec < 0)
+        # filter where distances are negative
+        # TODO check if this holds
+        distance_mask = distances > 0
+        avoidance_vec = np.sin(self.sensor_angle[2:7] - np.pi)
+        avoidance_vec = np.multiply(avoidance_vec, distances, where=distance_mask)
         
+        # positive -> obstacle to the left, negative -> obstacle to the right
+        
+        left_mask = np.logical_and(self.obstacle_threshold < avoidance_vec, avoidance_vec > 0)
+        left_mask = np.logical_and(left_mask, distance_mask)
+        
+        right_mask = np.logical_and(-self.obstacle_threshold > avoidance_vec, avoidance_vec < 0)
+        right_mask = np.logical_and(right_mask, distance_mask)
+
         min_dist_left = np.where(left_mask, avoidance_vec, np.inf).min()
         min_dist_right = np.where(right_mask, avoidance_vec, -np.inf).max()
         
@@ -109,8 +116,8 @@ class Decision:
             correction = 0
         
         # check for obstacle behind
-        avoidance_vec = np.cos(self.sensor_angle[3:6] -180) * distances[1:-1]
-        if np.any(avoidance_vec <= self.obstacle_threshold):
+        avoidance_vec = np.cos(self.sensor_angle[3:6] - np.pi) * distances[1:-1]
+        if np.any(avoidance_vec >= self.obstacle_threshold):
             # TODO: check expected movement
             correction = (correction, 0)
         else:
@@ -122,7 +129,7 @@ class Decision:
         """
         Adjust the current yaw based on the human direction
         """
-        self.yaw = -self.human_dir
+        self.yaw = -self.last_direction
     
     def search_for_human(self):
         """
