@@ -45,24 +45,30 @@ class Server:
     def generate_setpiont(self):
         if self.human_dir is not None and len(self.distances) != 0:
             new_setpoint = self.ai.update_perception(self.distances, self.human_dir, self.human_dist)
-            res = _convert_to_mavros_message(new_setpoint)
+            res = _convert_to_mavros_vel_message(new_setpoint)
             self.pub.publish(res)
 
-def _convert_to_mavros_message(setpoint) -> Twist:
+def _convert_to_mavros_vel_message(setpoint) -> Twist:
     res = Twist()
     res.header = Header()
     res.header.stamp = rospy.Time.now()
 
-    ## To be used with geometry_msg.Pose
-    # res.pose.position.x = setpoint[0]
-    # res.pose.position.y = setpoint[1]
-    # res.pose.position.z = setpoint[2]
-    # quaternion = quaternion_from_euler(0, 0, setpoint[3])
-    # res.pose.orientation = Quaternion(*quaternion)
-
     res.linear = Vector3(*setpoint[:3])
     res.angular = Vector3(0, 0, setpoint[3])
 
+    return res
+
+def _convert_to_mavros_pos_message(setpoint) -> PoseStamped:
+    # To be used with geometry_msg.Pose
+    res = PoseStamped()
+    res.header = Header()
+    res.header.stamp = rospy.Time.now()
+
+    res.pose.position.x = setpoint[0]
+    res.pose.position.y = setpoint[1]
+    res.pose.position.z = setpoint[2]
+    quaternion = quaternion_from_euler(0, 0, setpoint[3])
+    res.pose.orientation = Quaternion(*quaternion)
     return res
 
 
