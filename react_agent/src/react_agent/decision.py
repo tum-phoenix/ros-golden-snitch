@@ -58,6 +58,9 @@ class Decision:
             self.last_direction = dir_human
         self.current_dist_human = dist_human
         
+        self.check_for_obstacles()
+        self.adjust_yaw() 
+        
         # decide action
         if self.current_dist_human == -1:
             # case 0
@@ -65,12 +68,39 @@ class Decision:
         elif self.is_to_close():
             # case 1
             self.flee()
-        else:
-            # case 2
-            self.adjust_yaw()
 
         return [self.pos, self.yaw]
-    
+ 
+    def check_for_obstacles(self):
+        """
+        Returns the correction vlaues based on the range sensor information
+        Return: [vertical_correction, horizontal_correction]
+        """
+        # filter mask to ignore invalid or irrelevant distances
+        distances_mask = np.logical_and(
+            self.current_distances > 0,
+            self.current_distances < self.obstacle_threshold
+        )
+        if not np.any(distances_mask):
+            # no obstacle
+            self.pos = np.zeros(2)
+        else: 
+            # Dim: (2 x 8)
+            distances = self.sensor_angle[distances_mask][np.newaxis, :].repeat(2, 0)
+            distances[0] = np.sin(distances[0]) # horizontal
+            distances[1] = np.cos(distances[1]) # vertical
+            distances *= self.current_distances[distances_mask]
+           
+            # check for adversarial directions
+            adversarial = np.logical_and(np.any(distances < 0, axis=1), np.any(distances > 0, axis=1))
+            if np.any(adversarial):
+                # TODO just stop ?
+                max_correction = np.zeros(2)
+            else:
+                max_correction_idx = np.abs(distances).argmax(axis=1)
+                max_correction = -distances[max_correction_idx][:, 0]
+            self.pos = max_correction
+
     def is_to_close(self):
         """
         Checks if the human is to close to the drone
@@ -79,51 +109,16 @@ class Decision:
 
     def flee(self):
         """
-        Flee from human (backwards). Consider envirnment. 
+        Flee from human (backwards). Consider envirnment.
+        Flys in the horizontal direction backward path is blocked
         """
-        self.adjust_yaw() #TODO ensure that vertical adjustment is ignored 
-        # ignore sensors that are directed forwards
-        distances = self.current_distances[2:7]
-        # get correction distance to the sides
-        # filter where distances are negative
-        # TODO check if this holds
-        distance_mask = distances > 0
-        avoidance_vec = np.sin(self.sensor_angle[2:7] - np.pi)
-        avoidance_vec = np.multiply(avoidance_vec, distances, where=distance_mask)
-        
-        # positive -> obstacle to the left, negative -> obstacle to the right
-        
-        left_mask = np.logical_and(self.obstacle_threshold < avoidance_vec, avoidance_vec > 0)
-        left_mask = np.logical_and(left_mask, distance_mask)
-        
-        right_mask = np.logical_and(-self.obstacle_threshold > avoidance_vec, avoidance_vec < 0)
-        right_mask = np.logical_and(right_mask, distance_mask)
-
-        min_dist_left = np.where(left_mask, avoidance_vec, np.inf).min()
-        min_dist_right = np.where(right_mask, avoidance_vec, -np.inf).max()
-        
-        # positive -> move right, negative -> move left
-        if min_dist_left != np.inf and min_dist_right != -np.inf:
-            # constriction
-            raise NotImplementedError()
-        elif min_dist_left != np.inf:
-            # move right
-            correction = self.obstacle_threshold - min_dist_left
-        elif min_dist_right != -np.inf:
-            # move left
-            correction = -(self.obstacle_threshold + min_dist_right)
+        vertical_correction, horizontal_correction = self.pos
+        if horizontal_correction > 0:
+            # obstacle in our way -> increase horizontal correction
+            vertical_correction = np.sign(vertical_correction) * self.flee_dist
         else:
-            correction = 0
-        
-        # check for obstacle behind
-        avoidance_vec = np.cos(self.sensor_angle[3:6] - np.pi) * distances[1:-1]
-        if np.any(avoidance_vec >= self.obstacle_threshold):
-            # TODO: check expected movement
-            correction = (correction, 0)
-        else:
-            correction = (correction, self.flee_dist)
-
-        self.pos = correction        
+            horizontal_correction = -self.flee_dist
+        self.pos = np.array([vertical_correction, horizontal_correction])
     
     def adjust_yaw(self):
         """

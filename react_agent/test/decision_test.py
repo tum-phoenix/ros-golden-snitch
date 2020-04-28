@@ -19,7 +19,7 @@ class TestDecision(unittest.TestCase):
         """
         super(TestDecision, self).__init__(*args, **kwargs)
         rospack = rospkg.RosPack()
-        path = '../'
+        #path = '../'
         path = rospack.get_path('react_agent') + os.path.sep
         with open(path + SOFTWARE_CONFIG, 'r') as f:
             config = yaml.load(f, Loader=yaml.FullLoader)
@@ -42,8 +42,38 @@ class TestDecision(unittest.TestCase):
         human_dist = self.human_threshold
         human_dir = np.zeros(2)
         position, _ = ai.update_perception(distances, human_dir, human_dist)
-        self.assertEqual(position[1], self.flee_dist) 
+        self.assertTrue(np.all(position == np.array([0, -self.flee_dist]))) 
 
+    def test_avoid_wall(self):
+        ai = Decision()
+        distances = np.full(8, -1.0)
+        distances[5] = self.obstacle_threshold * 0.9
+        human_dist = np.inf
+        human_dir = np.zeros(2)
+        position, _ = ai.update_perception(distances, human_dir, human_dist)
+        self.assertTrue(np.all(position > 0))
+
+    def test_flee_along_obstacle(self):
+        ai = Decision()
+        distances = np.full(8, -1.0)
+        distances[3] = self.obstacle_threshold * 0.9
+        distances[4] = self.obstacle_threshold * 0.9
+        human_dist = self.human_threshold * 0.9
+        human_dir = np.zeros(2)
+        position, _ = ai.update_perception(distances, human_dir, human_dist)
+        self.assertEqual(position[0], -self.flee_dist)
+        self.assertTrue(position[1] > 0)
+    
+    def test_adversarial_direction(self):
+        ai = Decision()
+        distances = np.full(8, -1.0)
+        distances[0] = self.obstacle_threshold * 0.9
+        distances[4] = self.obstacle_threshold * 0.9
+        human_dist = np.inf
+        human_dir = np.zeros(2)
+        position, _ = ai.update_perception(distances, human_dir, human_dist)
+        self.assertTrue(np.all(position == np.zeros(2)))
+    
 if __name__ == '__main__':
     #unittest.main()
     import rostest
