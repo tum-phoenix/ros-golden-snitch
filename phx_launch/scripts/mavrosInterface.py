@@ -16,7 +16,7 @@ import yaml
 class MavrosUAV:
     def __init__(self, block = True, initUAV=False):
         rospack = rospkg.RosPack()
-        with open(rospack.get_path("phx_launch")+"/../physical.yaml") as f:
+        with open(rospack.get_path("phx_launch")+"/../config/hardware_config.yaml") as f:
             mechanical_config = yaml.load(f, Loader=yaml.FullLoader)
         self.OPERATION_POSITION = mechanical_config["operation_position"]
 

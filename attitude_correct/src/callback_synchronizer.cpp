@@ -7,6 +7,7 @@
 #include "std_msgs/Header.h"
 #include "geometry_msgs/Quaternion.h"
 #include "ros/ros.h"
+#include "ros/package.h"
 #include <cmath>
 #include <yaml-cpp/yaml.h>
 #include <algorithm>
@@ -72,7 +73,8 @@ void CallbackSynchronizer::altitudeCallback(std_msgs::Float64 msg) {
 }
 
 CallbackSynchronizer::CallbackSynchronizer() {
-    YAML::Node config = YAML::LoadFile("/home/henrik/catkin_ws2/src/phx-flight-ros-golden-snitch/physical.yaml");
+    std::string path = ros::package::getPath("attitude_correct");
+    YAML::Node config = YAML::LoadFile(path+"/../config/hardware_config.yaml");
     this->dirOfRangeSensors = config["direction_of_range_sensors"].as<std::vector<double>>();
     this->numOfRangeSensors = config["number_of_range_sensors"].as<unsigned int>();
     //Converts the direction of the range sensors to radians instead of degrees:
