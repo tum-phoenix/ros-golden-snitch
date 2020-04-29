@@ -44,7 +44,7 @@ getMessage(teraranger_array::RangeArray old, std::vector<double> ranges) {
 void CallbackSynchronizer::rangesCallback(teraranger_array::RangeArray msg) {
     std::vector<double> res{}; // = new std::vector<double>();
     for (int i = 0; i < msg.ranges.size(); i++) {
-        res[i] = msg.ranges[i].range;
+        res.push_back(msg.ranges[i].range);
     }
     std::vector<double> correctRanges{};
     std::vector<bool> seesFloor{}; // We do nothing with the detected floors for now, but we should soon.
@@ -76,14 +76,11 @@ void CallbackSynchronizer::altitudeCallback(std_msgs::Float64 msg) {
 }
 
 CallbackSynchronizer::CallbackSynchronizer() {
-//    this->rangesOut = rangesOut;
-
     YAML::Node config = YAML::LoadFile("/home/henrik/catkin_ws2/src/phx-flight-ros-golden-snitch/physical.yaml");
     this->dirOfRangeSensors = config["direction_of_range_sensors"].as<std::vector<double>>();
     this->numOfRangeSensors = config["number_of_range_sensors"].as<unsigned int>();
     //Converts the direction of the range sensors to radians instead of degrees:
     std::for_each(this->dirOfRangeSensors.begin(), this->dirOfRangeSensors.end(), [](double &deg){deg*M_PI/180;});
-    ROS_INFO_STREAM("Range sensor driections is now radians");
     this->altitude = 10;
     this->attitude = {0, 0, 0,};
 
@@ -94,10 +91,7 @@ CallbackSynchronizer::CallbackSynchronizer() {
 
     ros::NodeHandle n;
 
-    ROS_INFO_STREAM("Calback synchroniser starting to setup.");
-
     this->rangesOut = n.advertise<teraranger_array::RangeArray>(rangesOutName, 1);
-
 
     rangesIn = n.subscribe(rangesInName, 1, &CallbackSynchronizer::rangesCallback, this);
     attitude_sub = n.subscribe(attitudeTopicName, 1, &CallbackSynchronizer::attitudeCallback, this);
