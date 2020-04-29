@@ -17,11 +17,11 @@ const unsigned int numOfRangeSensors = 8;
  * @param: dirOfRangeSensors contains the direction of the range sensors in degrees, where 0 is straight forward and increasing with direction of the clock.
  */
 void correctDistances(
-        std::array<double, numOfRangeSensors> ranges,
+        std::vector<double> ranges,
         std::array<double, 3> attitude,
         double altitude,
-        std::array<double, numOfRangeSensors> dirOfRangeSensors,
-        std::array<double, numOfRangeSensors> &correctRanges,
-        std::array<bool, numOfRangeSensors> &seesFloor);
+        std::vector<double> dirOfRangeSensors,
+        std::vector<double> &correctRanges,
+                      std::vector<bool> &seesFloor);
 
 #endif //ATTITUDE_CORRECT_DISTANCE_CORRECTOR_H

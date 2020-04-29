@@ -12,11 +12,11 @@
 
 class DistanceCorrectorTest : public testing::Test {
 protected:
-    std::array<double, numOfRangeSensors> ranges;
+    std::vector<double> ranges;
     std::array<double, 3> attitude;
     double altitude;
-    std::array<double, numOfRangeSensors> dirOfRangeSensors;
-    std::array<bool, numOfRangeSensors> noneDetected;
+    std::vector<double> dirOfRangeSensors;
+    std::vector<bool> noneDetected;
 
 
     virtual void SetUp() {
@@ -37,20 +37,24 @@ TEST_F(DistanceCorrectorTest, NumOfRangeSensorsSet) {
 }
 
 TEST_F(DistanceCorrectorTest, SimpleTests) {
-    std::array<double, numOfRangeSensors> correctRanges{};
-    std::array<bool, numOfRangeSensors> seesFloor{};
+    std::vector<double> correctRanges{};
+    std::vector<bool> seesFloor{};
 
     correctDistances(ranges, attitude, altitude,dirOfRangeSensors,correctRanges,seesFloor);
     ASSERT_EQ(ranges, correctRanges);
     ASSERT_EQ(seesFloor, noneDetected);
 
+    correctRanges = {};
+    seesFloor = {};
     attitude = {0, 0, M_PI/2};
     correctDistances(ranges, attitude, altitude,dirOfRangeSensors,correctRanges,seesFloor);
     ASSERT_EQ(ranges, correctRanges);
     ASSERT_EQ(seesFloor, noneDetected);
 
 
-    std::array<double, numOfRangeSensors> refRanges = correctRanges;
+    std::vector<double> refRanges = correctRanges;
+    correctRanges = {};
+    seesFloor = {};
     attitude = {M_PI/18, 0, 0};
     correctDistances(ranges, attitude, altitude,dirOfRangeSensors,correctRanges,seesFloor);
     ASSERT_GE(refRanges, correctRanges);
@@ -62,6 +66,8 @@ TEST_F(DistanceCorrectorTest, SimpleTests) {
         }
     }
 
+    correctRanges = {};
+    seesFloor = {};
     attitude = {0, M_PI/3, 0};
     altitude = 1;
     ranges[0] = 2.5;
@@ -70,8 +76,8 @@ TEST_F(DistanceCorrectorTest, SimpleTests) {
 }
 
 TEST_F(DistanceCorrectorTest, PreciseTests){
-    std::array<double, numOfRangeSensors> correctRanges{};
-    std::array<bool, numOfRangeSensors> seesFloor{};
+    std::vector<double> correctRanges{};
+    std::vector<bool> seesFloor{};
 
     attitude = {0, M_PI/4, 0};
     correctDistances(ranges, attitude, altitude,dirOfRangeSensors,correctRanges,seesFloor);

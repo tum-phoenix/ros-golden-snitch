@@ -24,6 +24,8 @@ public:
     //std::array<double, numOfRangeSensors> ranges;
     std::array<double, 3> attitude;
     double altitude;
+    unsigned int numOfRangeSensors;
+    std::vector<double> dirOfRangeSensors;
 
 public:
     explicit CallbackSynchronizer();

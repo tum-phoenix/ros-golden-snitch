@@ -7,12 +7,16 @@
 
 
 void correctDistances(
-        std::array<double, numOfRangeSensors> ranges,
+        std::vector<double> ranges,
         std::array<double, 3> attitude,
         double altitude,
-        std::array<double, numOfRangeSensors> dirOfRangeSensors,
-        std::array<double, numOfRangeSensors> &correctRanges,
-        std::array<bool, numOfRangeSensors> &seesFloor) {
+        std::vector<double> dirOfRangeSensors,
+        std::vector<double> &correctRanges,
+        std::vector<bool> &seesFloor) {
+
+    // Empties the vectors in case they are filled.
+    correctRanges = {};
+    seesFloor = {};
 
     for (int i = 0; i < numOfRangeSensors; i++) {
         double yawRotatedRangeDir = attitude[2] + dirOfRangeSensors[i];
@@ -22,11 +26,11 @@ void correctDistances(
 
         // Check if it hits the floor
         double max_inc = x_dir * attitude[1] + y_dir * attitude[0];
-        seesFloor[i] = ranges[i] * sin(max_inc) > altitude;
+        seesFloor.push_back(ranges[i] * sin(max_inc) > altitude);
 
         // Calculate correct ranges
         double correct_dist_x = x_dir * ranges[i] * cos(attitude[1]);
         double correct_dist_y = y_dir * ranges[i] * cos(attitude[0]);
-        correctRanges[i] = sqrt(correct_dist_x * correct_dist_x + correct_dist_y * correct_dist_y);
+        correctRanges.push_back(sqrt(correct_dist_x * correct_dist_x + correct_dist_y * correct_dist_y));
     }
 }

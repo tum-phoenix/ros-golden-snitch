@@ -8,12 +8,14 @@
 #include "geometry_msgs/Quaternion.h"
 #include "ros/ros.h"
 #include <cmath>
+#include <yaml-cpp/yaml.h>
+#include <algorithm>
 
 //#include "distance_corrector.h"
 
 // TODO: Get the real values and get this from somewhere else.
-std::array<double, numOfRangeSensors> dirOfRangeSensors = {0, M_PI / 4, M_PI / 2, 3 * M_PI / 4, M_PI, 5 * M_PI / 4,
-                                                           3 * M_PI / 2, 7 * M_PI / 4};
+//std::vector<double> dirOfRangeSensors = {0, M_PI / 4, M_PI / 2, 3 * M_PI / 4, M_PI, 5 * M_PI / 4,
+//                                                           3 * M_PI / 2, 7 * M_PI / 4};
 
 double sq(double x) {
     return x * x;
@@ -32,7 +34,7 @@ std::array<double, 3> eulerFromQuat(geometry_msgs::Quaternion quat) {
 
 // Note that this might change the 'old' message.
 teraranger_array::RangeArray
-getMessage(teraranger_array::RangeArray old, std::array<double, numOfRangeSensors> ranges) {
+getMessage(teraranger_array::RangeArray old, std::vector<double> ranges) {
     for (int i = 0; i < numOfRangeSensors; i++) {
         old.ranges[i].range = ranges[i];
     }
@@ -40,12 +42,12 @@ getMessage(teraranger_array::RangeArray old, std::array<double, numOfRangeSensor
 }
 
 void CallbackSynchronizer::rangesCallback(teraranger_array::RangeArray msg) {
-    std::array<double, numOfRangeSensors> res{}; // = new std::array<double, numOfRangeSensors>();
+    std::vector<double> res{}; // = new std::vector<double>();
     for (int i = 0; i < msg.ranges.size(); i++) {
         res[i] = msg.ranges[i].range;
     }
-    std::array<double, numOfRangeSensors> correctRanges{};
-    std::array<bool, numOfRangeSensors> seesFloor{}; // We do nothing with the detected floors for now, but we should soon.
+    std::vector<double> correctRanges{};
+    std::vector<bool> seesFloor{}; // We do nothing with the detected floors for now, but we should soon.
     correctDistances(res, this->attitude, this->altitude, dirOfRangeSensors, correctRanges, seesFloor);
     teraranger_array::RangeArray out = getMessage(msg, correctRanges);
     this->rangesOut.publish(out);
@@ -75,6 +77,13 @@ void CallbackSynchronizer::altitudeCallback(std_msgs::Float64 msg) {
 
 CallbackSynchronizer::CallbackSynchronizer() {
 //    this->rangesOut = rangesOut;
+
+    YAML::Node config = YAML::LoadFile("/home/henrik/catkin_ws2/src/phx-flight-ros-golden-snitch/physical.yaml");
+    this->dirOfRangeSensors = config["direction_of_range_sensors"].as<std::vector<double>>();
+    this->numOfRangeSensors = config["number_of_range_sensors"].as<unsigned int>();
+    //Converts the direction of the range sensors to radians instead of degrees:
+    std::for_each(this->dirOfRangeSensors.begin(), this->dirOfRangeSensors.end(), [](double &deg){deg*M_PI/180;});
+    ROS_INFO_STREAM("Range sensor driections is now radians");
     this->altitude = 10;
     this->attitude = {0, 0, 0,};
 

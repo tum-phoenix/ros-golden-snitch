@@ -18,7 +18,17 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
+#yaml_DIR =
+find_package(yaml-cpp REQUIRED)
+message(STATUS "yaml-cpp_FOUND=${yaml-cpp_FOUND}")
+message(STATUS "yaml-cpp_INCLUDE_DIRS=${yaml-cpp_INCLUDE_DIRS}")
 
+get_cmake_property(_variableNames VARIABLES)
+list (SORT _variableNames)
+foreach (_variableName ${_variableNames})
+    message(STATUS "${_variableName}=${${_variableName}}")
+endforeach()
+set(yaml-cpp_INCLUDE_DIRS  ${yaml-cpp_DIR})
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -109,7 +119,7 @@ catkin_package(
         #  INCLUDE_DIRS include
         #  LIBRARIES attitude_correct
         #  CATKIN_DEPENDS geometry_msgs mavros mavros_msgs roscpp std_msgs
-        #  DEPENDS system_lib
+          DEPENDS yaml-cpp
 )
 
 ###########
@@ -121,6 +131,7 @@ catkin_package(
 include_directories(
         # include
         ${catkin_INCLUDE_DIRS}
+        ${yaml-cpp_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -148,9 +159,11 @@ add_executable(${PROJECT_NAME}_node src/distance_corrector.cpp include/attitude_
 ## same as for the library above
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
+
 ## Specify libraries to link a library or executable target against
 target_link_libraries(${PROJECT_NAME}_node
         ${catkin_LIBRARIES}
+        yaml-cpp # Install this by sudo apt install libyaml-cpp-dev
         )
 
 #############
@@ -206,7 +219,7 @@ if (CATKIN_ENABLE_TESTING)
     #    include_directories(${PROJECT_NAME}-test include)
 
     add_library(${PROJECT_NAME}_LIB src/distance_corrector.cpp src/callback_synchronizer.cpp)
-    target_link_libraries(${PROJECT_NAME}_LIB ${catkin_LIBRARIES})
+    target_link_libraries(${PROJECT_NAME}_LIB ${catkin_LIBRARIES} yaml-cpp)
     ## Add gtest based cpp test target and link libraries
     catkin_add_gtest(${PROJECT_NAME}-test test/distance_corrector_test.cpp)
     if (TARGET ${PROJECT_NAME}-test)
@@ -223,7 +236,7 @@ if (CATKIN_ENABLE_TESTING)
 
     find_package(rostest REQUIRED)
     add_rostest_gtest(${PROJECT_NAME}_int_test test/attitude_corrector_int.test test/test_integration.cpp)
-    target_link_libraries(${PROJECT_NAME}_int_test ${catkin_LIBRARIES})
+    target_link_libraries(${PROJECT_NAME}_int_test ${catkin_LIBRARIES} yaml-cpp)
 
     ## Add folders to be run by python nosetests
     # catkin_add_nosetests(test)
