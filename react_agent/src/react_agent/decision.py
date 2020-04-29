@@ -21,7 +21,7 @@ class Decision:
         path = rospack.get_path('react_agent') + os.path.sep
         with open(path + HARDWARE_CONFIG, 'r') as f:
             config = yaml.load(f, Loader=yaml.FullLoader)
-            self.sensor_angle = get_rad(np.array(config['sensor_angle']))
+            self.sensor_angle = get_rad(np.array(config['direction_of_range_sensors']))
         with open(path + SOFTWARE_CONFIG, 'r') as f:
             config = yaml.load(f, Loader=yaml.FullLoader)
             self.obstacle_threshold = config['obstacle_threshold']
