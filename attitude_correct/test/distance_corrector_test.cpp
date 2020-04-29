@@ -10,6 +10,8 @@
 
 // TODO: Check what happens when the range sensor reading is out of range.
 
+unsigned int numOfRangeSensors = 8;
+
 class DistanceCorrectorTest : public testing::Test {
 protected:
     std::vector<double> ranges;
@@ -32,22 +34,20 @@ TEST_F(DistanceCorrectorTest, OneIsOne) {
     ASSERT_EQ(1, 1);
 }
 
-TEST_F(DistanceCorrectorTest, NumOfRangeSensorsSet) {
-    ASSERT_GT(numOfRangeSensors,0);
-}
-
 TEST_F(DistanceCorrectorTest, SimpleTests) {
     std::vector<double> correctRanges{};
     std::vector<bool> seesFloor{};
 
-    correctDistances(ranges, attitude, altitude,dirOfRangeSensors,correctRanges,seesFloor);
+    correctDistances(8, ranges, attitude, altitude, dirOfRangeSensors,
+                     correctRanges, seesFloor);
     ASSERT_EQ(ranges, correctRanges);
     ASSERT_EQ(seesFloor, noneDetected);
 
     correctRanges = {};
     seesFloor = {};
     attitude = {0, 0, M_PI/2};
-    correctDistances(ranges, attitude, altitude,dirOfRangeSensors,correctRanges,seesFloor);
+    correctDistances(8, ranges, attitude, altitude, dirOfRangeSensors,
+                     correctRanges, seesFloor);
     ASSERT_EQ(ranges, correctRanges);
     ASSERT_EQ(seesFloor, noneDetected);
 
@@ -56,7 +56,8 @@ TEST_F(DistanceCorrectorTest, SimpleTests) {
     correctRanges = {};
     seesFloor = {};
     attitude = {M_PI/18, 0, 0};
-    correctDistances(ranges, attitude, altitude,dirOfRangeSensors,correctRanges,seesFloor);
+    correctDistances(8, ranges, attitude, altitude, dirOfRangeSensors,
+                     correctRanges, seesFloor);
     ASSERT_GE(refRanges, correctRanges);
     for (int i = 0; i<numOfRangeSensors;i++){
         if (dirOfRangeSensors[i] !=  0 && dirOfRangeSensors[i] != M_PI){
@@ -71,7 +72,8 @@ TEST_F(DistanceCorrectorTest, SimpleTests) {
     attitude = {0, M_PI/3, 0};
     altitude = 1;
     ranges[0] = 2.5;
-    correctDistances(ranges, attitude, altitude,dirOfRangeSensors,correctRanges,seesFloor);
+    correctDistances(8, ranges, attitude, altitude, dirOfRangeSensors,
+                     correctRanges, seesFloor);
     ASSERT_EQ(true, seesFloor[0]);
 }
 
@@ -80,11 +82,13 @@ TEST_F(DistanceCorrectorTest, PreciseTests){
     std::vector<bool> seesFloor{};
 
     attitude = {0, M_PI/4, 0};
-    correctDistances(ranges, attitude, altitude,dirOfRangeSensors,correctRanges,seesFloor);
+    correctDistances(8, ranges, attitude, altitude, dirOfRangeSensors,
+                     correctRanges, seesFloor);
     ASSERT_EQ(cos(M_PI/4) * ranges[0], correctRanges[0]);
 
     attitude = {0, M_PI/4, M_PI/2};
-    correctDistances(ranges, attitude, altitude,dirOfRangeSensors,correctRanges,seesFloor);
+    correctDistances(8, ranges, attitude, altitude, dirOfRangeSensors,
+                     correctRanges, seesFloor);
     ASSERT_EQ(cos(M_PI/4) * ranges[2], correctRanges[2]);
 }
 

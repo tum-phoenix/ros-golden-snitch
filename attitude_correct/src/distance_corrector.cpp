@@ -5,14 +5,12 @@
 #include "../include/attitude_correct/distance_corrector.h"
 #include <cmath>
 
-
-void correctDistances(
-        std::vector<double> ranges,
-        std::array<double, 3> attitude,
-        double altitude,
-        std::vector<double> dirOfRangeSensors,
-        std::vector<double> &correctRanges,
-        std::vector<bool> &seesFloor) {
+void correctDistances(unsigned int numOfRangeSensors,
+                      std::vector<double> ranges,
+                      std::array<double, 3> attitude, double altitude,
+                      std::vector<double> dirOfRangeSensors,
+                      std::vector<double> &correctRanges,
+                      std::vector<bool> &seesFloor) {
 
     // Empties the vectors in case they are filled.
     correctRanges = {};

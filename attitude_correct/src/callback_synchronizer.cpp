@@ -11,12 +11,6 @@
 #include <yaml-cpp/yaml.h>
 #include <algorithm>
 
-//#include "distance_corrector.h"
-
-// TODO: Get the real values and get this from somewhere else.
-//std::vector<double> dirOfRangeSensors = {0, M_PI / 4, M_PI / 2, 3 * M_PI / 4, M_PI, 5 * M_PI / 4,
-//                                                           3 * M_PI / 2, 7 * M_PI / 4};
-
 double sq(double x) {
     return x * x;
 }
@@ -33,8 +27,9 @@ std::array<double, 3> eulerFromQuat(geometry_msgs::Quaternion quat) {
 }
 
 // Note that this might change the 'old' message.
-teraranger_array::RangeArray
-getMessage(teraranger_array::RangeArray old, std::vector<double> ranges) {
+teraranger_array::RangeArray getMessage(teraranger_array::RangeArray old,
+                                        std::vector<double> ranges,
+                                        unsigned int numOfRangeSensors) {
     for (int i = 0; i < numOfRangeSensors; i++) {
         old.ranges[i].range = ranges[i];
     }
@@ -48,8 +43,9 @@ void CallbackSynchronizer::rangesCallback(teraranger_array::RangeArray msg) {
     }
     std::vector<double> correctRanges{};
     std::vector<bool> seesFloor{}; // We do nothing with the detected floors for now, but we should soon.
-    correctDistances(res, this->attitude, this->altitude, dirOfRangeSensors, correctRanges, seesFloor);
-    teraranger_array::RangeArray out = getMessage(msg, correctRanges);
+    correctDistances(this->numOfRangeSensors, res, this->attitude, this->altitude, dirOfRangeSensors,
+                     correctRanges, seesFloor);
+    teraranger_array::RangeArray out = getMessage(msg, correctRanges, this->numOfRangeSensors);
     this->rangesOut.publish(out);
 }
 

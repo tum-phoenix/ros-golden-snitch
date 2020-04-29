@@ -12,9 +12,6 @@
 #include "distance_corrector.h"
 #include "ros/ros.h"
 
-//const unsigned int numOfRangeSensors = 8;
-
-
 class CallbackSynchronizer {
 public:
     ros::Publisher rangesOut;
