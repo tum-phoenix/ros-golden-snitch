@@ -17,7 +17,7 @@ class MavrosUAV:
     def __init__(self, block = True, initUAV=False):
         rospack = rospkg.RosPack()
         with open(rospack.get_path("phx_launch")+"/../config/hardware_config.yaml") as f:
-            mechanical_config = yaml.load(f, Loader=yaml.FullLoader)
+            mechanical_config = yaml.load(f, Loader=yaml.SafeLoader)
         self.OPERATION_POSITION = mechanical_config["operation_position"]
 
         set_origin_topic_name = "/mavros/global_position/set_gp_origin"
