@@ -1,0 +1,4 @@
+<launch>
+  <node pkg="phx_launch" name="phx_GS_launcher" type="fsm.py" />
+  <test test-name="fsm_test" pkg="phx_launch" type="fsm_code_test.py" />
+</launch>
