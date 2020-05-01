@@ -13,7 +13,6 @@ from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 from human_info.msg import HumanPos
 
-
 def pos_from_center(poses, shape):
 	"""
 	In progress

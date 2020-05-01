@@ -1,7 +1,11 @@
 import numpy as np
 from cv_bridge import CvBridge
+import os
 import sys
-sys.path.append('project-posenet/')
+import rospkg
+rospack = rospkg.RosPack()
+path = rospack.get_path('human_info')
+sys.path.append(os.path.join(path, 'src/project-posenet/'))
 from pose_engine import PoseEngine
 
 ERASE_LINE = '\x1b[2K'
