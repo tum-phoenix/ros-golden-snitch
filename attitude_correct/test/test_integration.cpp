@@ -119,7 +119,7 @@ TEST_F(DistanceCorrectorTest, IntegrationTest) {
   ros::Duration(0.1).sleep();
   ros::spinOnce();
   ASSERT_EQ(1, cbc.count);
-  ASSERT_EQ(range_msg.ranges, cbc.lastMsg.ranges);
+  ASSERT_EQ(range_msg, cbc.lastMsg);
 
   pub_altitude.publish(alt_msg);
   pub_attitude.publish(att_msg);
