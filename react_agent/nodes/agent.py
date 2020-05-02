@@ -13,6 +13,7 @@ from react_agent.decision_tree import Decision
 from geometry_msgs.msg import PoseStamped, Quaternion
 from std_msgs.msg import Header
 from geometry_msgs.msg import Twist, Vector3
+from mavros_msgs.msg import PositionTarget
 from tf.transformations import quaternion_from_euler
 import numpy as np
 
@@ -29,7 +30,7 @@ class Server:
         # self.pub = rospy.Publisher("phx/setpoint", Twist, queue_size=1)
 
         # For positions
-        self.pub = rospy.Publisher("phx/setpoint/pos", PoseStamped, queue_size=1) # "/mavros/setpoint_position/local"
+        self.pub = rospy.Publisher("phx/setpoint/pos", PositionTarget, queue_size=1)
 
 
     def human_tracking_callback(self, msg):
@@ -62,7 +63,7 @@ def _convert_to_mavros_vel_message(setpoint) -> Twist:
 
     return res
 
-def _convert_to_mavros_pos_message(setpoint) -> PoseStamped:
+def _convert_to_mavros_pos_message_pose_stamped(setpoint) -> PoseStamped:
     # To be used with geometry_msg.Pose
     res = PoseStamped()
     res.header = Header()
@@ -73,6 +74,23 @@ def _convert_to_mavros_pos_message(setpoint) -> PoseStamped:
     res.pose.position.z = setpoint[2]
     quaternion = quaternion_from_euler(0, 0, setpoint[3])
     res.pose.orientation = Quaternion(*quaternion)
+    return res
+
+def _convert_to_mavros_pos_message(setpoint) -> PositionTarget:
+    # To be used with geometry_msg.Pose
+    res = PositionTarget()
+    res.header = Header()
+    res.header.stamp = rospy.Time.now()
+
+    res.coordinate_frame = PositionTarget.FRAME_BODY_NED
+    res.type_mask = res.IGNORE_VX + res.IGNORE_VY + res.IGNORE_VZ + res.IGNORE_AFX + res.IGNORE_AFY + res.IGNORE_AFZ + res.IGNORE_YAW_RATE
+
+
+    res.position.x = setpoint[0]
+    res.position.y = setpoint[1]
+    res.position.z = setpoint[2]
+    res.yaw = (setpoint[3] + 90) * np.pi/180
+
     return res
 
 

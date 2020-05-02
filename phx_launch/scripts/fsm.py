@@ -6,6 +6,7 @@ from enum import Enum
 from std_msgs.msg import Empty, Float64
 from geometry_msgs.msg import PoseStamped, Twist, Pose, Point, Quaternion
 from mavros_msgs.msg import State as UAV_State
+from mavros_msgs.msg import PositionTarget
 from sensor_msgs.msg import Imu
 
 
@@ -30,7 +31,8 @@ class Fsm:
 
         self.land_sub = rospy.Subscriber("phx/land", Empty, self.land_handler)
         self.takeoff_sub = rospy.Subscriber("phx/takeoff", Empty, self.takeoff_handler)
-        self.control_input_pos_sub = rospy.Subscriber("phx/setpoint/pos", PoseStamped, self.control_pos_handler)
+        # self.control_input_pos_sub = rospy.Subscriber("phx/setpoint/loc_pos", PoseStamped, self.control_pos_handler_local_pose)
+        self.control_input_pos_sub = rospy.Subscriber("phx/setpoint/pos", PositionTarget,  self.control_pos_handler)
         # self.pose_sub = rospy.Subscriber("/mavros/local_position/pose", PoseStamped, self.altitude_handler) # To check if we have reached the desired altitude to change state.
         self.uav_state_sub = rospy.Subscriber("/mavros/state", UAV_State, self.uav_state_handler)
         self.imu_sub = rospy.Subscriber("/mavros/imu/data", Imu, self.imu_handler)
@@ -39,7 +41,9 @@ class Fsm:
 
 
         self.vel_pub = rospy.Publisher("/mavros/setpoint_velocity/cmd_vel_unstamped", Twist, queue_size=2)
-        self.pos_pub = rospy.Publisher("/mavros/setpoint_position/local", PoseStamped, queue_size=2)
+        # self.pos_pub = rospy.Publisher("/mavros/setpoint_position/local", PoseStamped, queue_size=2)
+        self.pos_pub = rospy.Publisher("/mavros/setpoint_raw/local", PositionTarget, queue_size=2)
+
         # TODO: Might be tat we need to use http://docs.ros.org/api/mavros_msgs/html/msg/PositionTarget.html and  /mavros/setpoint_raw/target_local instead. :(
 
         self.current_pose = Pose()
@@ -78,7 +82,7 @@ class Fsm:
             self.vel_pub.publish(cmd_msg)
 
     # The one we use while we do position control
-    def control_pos_handler(self, cmd_msg):
+    def control_pos_handler_local_pose(self, cmd_msg):
         if self.state == States.FLYING:
 
             # self.pos_pub.publish(cmd_msg)
@@ -97,6 +101,16 @@ class Fsm:
             quat = mavrosInterface.quaternion_multiply(curquat, relquat)
             cmd_msg.pose.orientation = Quaternion(quat[1], quat[2], quat[3], quat[0])
             print("Respos:", cmd_msg.pose.position)
+            self.pos_pub.publish(cmd_msg)
+
+    # The one we use while we do position control
+    def control_pos_handler(self, cmd_msg : PositionTarget):
+        if self.state == States.FLYING:
+
+            # 1.57 = (pi/2) yaw is no rotation
+            # x is positive to the right
+            # y is positive forward
+            # z is positive upward
             self.pos_pub.publish(cmd_msg)
 
 
