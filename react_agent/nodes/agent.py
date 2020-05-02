@@ -89,7 +89,7 @@ def _convert_to_mavros_pos_message(setpoint) -> PositionTarget:
     res.position.x = setpoint[0]
     res.position.y = setpoint[1]
     res.position.z = setpoint[2]
-    res.yaw = setpoint[3]
+    res.yaw = (setpoint[3] + 90) * np.pi/180
 
     return res
 
