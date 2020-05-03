@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import argparse
 from image_viewer.viewer import Viewer
+import logging
 
 def main(args):
     topic = args.topic
