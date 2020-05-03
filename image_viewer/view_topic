@@ -1,0 +1,18 @@
+#!/usr/bin/python3
+import argparse
+from image_viewer.viewer import Viewer
+
+def main(args):
+    topic = args.topic
+    viewer = Viewer(topic)
+    viewer.start()
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Image downsample')
+    parser.add_argument('--verbose', '-v', dest='verbose', action='store_true')
+    parser.add_argument('topic', type=str, help='ROS topic')
+    args = parser.parse_args()
+    if args.verbose is True:
+        logging.basicConfig(level=logging.INFO)
+    main(args)
+
