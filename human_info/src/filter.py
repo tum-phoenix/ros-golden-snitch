@@ -32,12 +32,16 @@ class Outlier_Rejection:
     def __init__(self):
         # maximal difference allowed between two timesteps
         self.max_difference = 50
-        self.lst = []
+        self.lst = {}
 
-    def update(self, new_dist):
-        self.lst.append(new_dist)
-        if len(self.lst) > 1:
-            incr_difference = abs(self.lst[-1] - self.lst[-2])
-            if incr_difference > self.max_difference:
-                self.lst.remove(self.lst[-1])
-        return self.lst[-1]
+    def update(self, new_dist, keypoint_type):
+
+        # if there is no entry, for that feature, in the dictionary, this is the first pose with that feature
+        if !self.lst[keypoint_type]:
+            self.lst[keypoint_type]=new_dist
+            return self.lst[keypoint_type]
+        # otherwise check the difference between this new pose distance, and the old one; if it's bigger that max_difference, this is an outlier, and should be ignored
+        elif abs(new_dist - self.lst[keypoint_type]) > self.max_difference:
+            return -1
+        # otherwise it's within the acceptable range, and we return the value
+        return self.lst[keypoint_type]

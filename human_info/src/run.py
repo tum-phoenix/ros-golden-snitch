@@ -45,7 +45,7 @@ def cal_distance(poses):
     @param threshold the score threshold for the pose prediction
     """
 
-    if len(poses) > 0:
+   if len(poses) > 0:
         pose_dis = []
         for pose in poses:
             feature_dis = []
@@ -59,10 +59,10 @@ def cal_distance(poses):
                         keypoint_1.yx - keypoint_2.yx, ord=1)
                     distance = dis * FOCAL_LENGTH / pix_distance
                     #filtering odd values
-                    outlier_rejection = filter.Outlier_Rejection()
-                    distance = outlier_rejection.update(distance)
-                    # TODO remove debug when testing is done
-                    feature_dis.append(distance)
+                    distance = self.outlier_rejection.update(distance, f_name_1)
+                    # only append distance, if it doesn't differenciate too much from the same keypoint, last frame
+                    if distance!=-1:
+                        feature_dis.append(distance)
 
             if len(feature_dis) > 0:
                 # avg over feature distances
@@ -133,6 +133,8 @@ def process_frame(frame):
 class Processor:
     def __init__(self):
         self.pub = rospy.Publisher('human_info', HumanPos, queue_size=1)
+        # we create the outlier_rejection here, because we need to continually save the distance to each feature, so this can not happen within one frame, but over the course of all the frames
+        self.outlier_rejection = Outlier_Rejection()
 
     def ros_callback(self, frame):
         """
