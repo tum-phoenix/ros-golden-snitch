@@ -15,12 +15,11 @@ class Average_Filter:
         self.n = 10
 
     def update(self, new_dist):
-        if len(self.lst) < self.n:
-            lst.append(new_dist)
-        else:
-            lst.remove(self.lst[0])
-            lst.append(new_dist)
-            average_distance = sum(self.list)/len(self.list)
+        #global average_distance
+        self.lst.append(new_dist)
+        average_distance = sum(self.lst) / len(self.lst)
+        if len(self.lst) > self.n:
+            self.lst.remove(self.lst[0])
         return average_distance
 
 class Outlier_Rejection:
@@ -39,6 +38,6 @@ class Outlier_Rejection:
         self.lst.append(new_dist)
         if len(self.lst) > 1:
             incr_difference = abs(self.lst[-1] - self.lst[-2])
-            if  incr_difference > self.max_difference:
+            if incr_difference > self.max_difference:
                 self.lst.remove(self.lst[-1])
-        return lst[-1]
+        return self.lst[-1]

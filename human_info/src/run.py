@@ -59,8 +59,8 @@ def cal_distance(poses):
                         keypoint_1.yx - keypoint_2.yx, ord=1)
                     distance = dis * FOCAL_LENGTH / pix_distance
                     #filtering odd values
-                    self.outlier_rejection = Outlier_Rejection()
-                    distance = self.outlier_rejection.update(distance)
+                    outlier_rejection = filter.Outlier_Rejection()
+                    distance = outlier_rejection.update(distance)
                     # TODO remove debug when testing is done
                     feature_dis.append(distance)
 
@@ -155,8 +155,8 @@ class Processor:
             msg.v_angle = v_angle
             msg.distance = distance
             # filtering odd values
-            self.filter = average_Filter()
-            msg.distance = self.filter.update(msg.distance)
+            average_filter = filter.Average_Filter()
+            msg.distance = average_filter.update(msg.distance)
         else:
             msg.h_angle = 0
             msg.v_angle = 0
