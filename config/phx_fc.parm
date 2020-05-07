@@ -1,5 +1,7 @@
 # This file contains the setup for the flight controller necesarry for autonomous flight.
 # Not PID-tuning, radio setup etc.
+# Please keep this up to date, instead of editing the parameter directly on the drone.
+# In mavproxy: param load phx_fc.parm
 #RNGFND1_TYPE 1
 #RNGFND1_SCALING 10
 #RNGFND1_PIN 0
