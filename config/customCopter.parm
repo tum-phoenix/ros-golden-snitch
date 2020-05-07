@@ -1,3 +1,5 @@
+# This file contains the setup for the flight controller necesarry for autonomous flight.
+# Not PID-tuning, radio setup etc.
 #RNGFND1_TYPE 1
 #RNGFND1_SCALING 10
 #RNGFND1_PIN 0
