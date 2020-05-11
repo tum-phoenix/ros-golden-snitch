@@ -99,7 +99,7 @@ if __name__ == '__main__':
 
     server = Server()
 
-    rospy.Subscriber('/human_info/human_info', HumanPos, server.human_tracking_callback)
+    rospy.Subscriber('/human_info', HumanPos, server.human_tracking_callback)
     rospy.Subscriber('/multiflex_1/ranges_raw', RangeArray, server.ranges_callback)
 
     rospy.spin()
