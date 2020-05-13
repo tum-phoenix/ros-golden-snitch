@@ -1,0 +1,5 @@
+<launch>
+    <node pkg="rosbag" type="play" name="rosbag" required="true" args="/home/pi/rosbags/human_test.bag"/>
+    <node pkg="human_info" type="run.py" name="human_info" required="true"/>    
+    <node pkg="observer" type="observe.py" name="observer" required="true" cwd='node'/>
+</launch>
