@@ -59,8 +59,8 @@ def cal_distance(poses):
                         keypoint_1.yx - keypoint_2.yx, ord=1)
                     distance = dis * FOCAL_LENGTH / pix_distance
                     #filtering odd values
-                    self.outlier_rejection = Outlier_Rejection()
-                    distance = self.outlier_rejection.update(distance)
+                    #self.outlier_rejection = Outlier_Rejection()
+                    #distance = self.outlier_rejection.update(distance)
                     # TODO remove debug when testing is done
                     feature_dis.append(distance)
 
@@ -143,9 +143,10 @@ class Processor:
         frame = BRIDGE.imgmsg_to_cv2(frame, "bgr8")
         frame = cv2.resize(frame, (640, 480))
         distance, position, poses = process_frame(frame)
-        """
         if position is not None:
-        center, avg, h_angle, v_angle = position
+            center, avg, h_angle, v_angle = position
+        
+        """
         frame = add_pose(poses, frame)
         frame = add_centroids(frame, center, avg)
         """
@@ -155,8 +156,8 @@ class Processor:
             msg.v_angle = v_angle
             msg.distance = distance
             # filtering odd values
-            self.filter = average_Filter()
-            msg.distance = self.filter.update(msg.distance)
+            # self.filter = average_Filter()
+            # msg.distance = self.filter.update(msg.distance)
         else:
             msg.h_angle = 0
             msg.v_angle = 0
