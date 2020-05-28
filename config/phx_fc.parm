@@ -2,15 +2,20 @@
 # Not PID-tuning, radio setup etc.
 # Please keep this up to date, instead of editing the parameter directly on the drone.
 # In mavproxy: param load phx_fc.parm
-#RNGFND1_TYPE 1
-#RNGFND1_SCALING 10
-#RNGFND1_PIN 0
-#RNGFND1_MAX_CM 5000
-#RNGFND1_MIN_CM 0
+# Setup the altitue range finder:
+
+# TODO: Find parameters for our rangefinder
+RNGFND1_TYPE 6
+# RNGFND1_SCALING 10
+# RNGFND1_PIN 0
+RNGFND1_MAX_CM 300
+RNGFND1_MIN_CM 5
 # Enable guided mode with optical flow:
-AHRS_EKF_TYPE 3 
-EK2_ENABLE 0 
-EK3_ENABLE 1 
+AHRS_EKF_TYPE 2 
+EK2_ENABLE 1 
+EK3_ENABLE 0
 GPS_TYPE 0
-EK3_GPS_TYPE 3
-EK3_GPS_CHECK 0
+EK2_GPS_TYPE 3
+EK2_GPS_CHECK 0
+# Disables arming checks on GPS
+ARMING_CHECK 61430
