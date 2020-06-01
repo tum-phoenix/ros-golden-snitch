@@ -19,3 +19,10 @@ EK2_GPS_TYPE 3
 EK2_GPS_CHECK 0
 # Disables arming checks on GPS
 ARMING_CHECK 61430
+
+
+## To check:
+# BRD_OPTIONS # 1 on the drone and 0 in sim
+# SIM_GPS2_TYPE # 0 on the drone and 1 in sim
+# AHRS_ORIENTATION -> [ERROR] [1590766003.669737549]: FCU: PreArm: EKF compass variance
+
