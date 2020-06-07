@@ -5,7 +5,7 @@ from rospy import loginfo
 
 class Mapper:
     def __init__(self, dirOfRangeSensosr):
-        # TODO: Decide for feasible map datastructure
+        # The map is a list of 3d point coordinates where each point is (x, y, z,)
         self.map = []
         self.dirOfRangeSensors = dirOfRangeSensosr
 
