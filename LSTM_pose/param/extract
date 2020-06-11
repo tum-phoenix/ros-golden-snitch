@@ -1,0 +1,67 @@
+#!/usr/bin/env python
+import os
+import logging
+import argparse
+import time
+
+import caffe_pb2 as cq
+import pickle
+import tensorflow as tf
+
+def main(args):
+    model = args.model
+    with open(model, 'rb') as f:
+        cq2 = cq.NetParameter()
+        cq2.ParseFromString(f.read())
+
+    layers = []
+    sk = []
+    for layer in cq2.layer:
+        layer_type = layer.type
+        if layer_type == 'Convolution':
+            w, b = layer.blobs
+            # TODO check transpose
+            w = tf.transpose(tf.reshape(tf.constant(w.data), w.shape.dim))
+            b = tf.reshape(tf.constant(b.data), b.shape.dim)
+            kernel, _, inputs, filters = w.shape
+            conv = tf.keras.layers.Conv2D(filters, kernel)
+            conv.build((1,1,1,inputs))
+            conv.set_weights([w,b])
+            layers.append((layer.name, conv))
+        else:
+            sk.append(layer_type)
+
+    print('Ignored Layers: ', set(sk))
+
+    return layers
+
+def dir_path(path):
+    """
+    Type check for argparse
+    """
+    if os.path.isdir(path):
+        return path
+    raise NotADirectoryError(path)
+
+def file_path(path):
+    """
+    Type check of argparse
+    """
+    if os.path.isfile(path):
+        return path
+    raise FileNotFoundError(path)
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Image labeling')
+    
+    parser.add_argument('--verbose', '-v', dest='verbose', action='store_true')
+    parser.add_argument('model', type=file_path, help='Model path')
+
+    args = parser.parse_args()
+    if args.verbose is True:
+        logging.basicConfig(level=logging.INFO)
+    start = time.time()
+    logging.info('Start.')
+    out = main(args)
+    end = time.time()
+    logging.info('Finished. Time: {}'.format(end-start))
