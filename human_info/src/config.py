@@ -10,13 +10,13 @@ from pose_engine import PoseEngine
 
 ERASE_LINE = '\x1b[2K'
 
-# possible FEATURES
-# ['nose', 'left eye', 'right eye', 'left ear', 'right ear', 'left shoulder', 'right shoulder', 'left elbow', 'right elbow', 'left wrist', 'right wrist', 'left hip', 'right hip', 'left knee', 'right knee', 'left ankle', 'right ankle']
+# possible FEATURE_DISTANCES
+FEATURES = ['nose', 'left eye', 'right eye', 'left ear', 'right ear', 'left shoulder', 'right shoulder', 'left elbow', 'right elbow', 'left wrist', 'right wrist', 'left hip', 'right hip', 'left knee', 'right knee', 'left ankle', 'right ankle']
 
 
-#TODO search better FEATURES and test them
+#TODO search better FEATURE_DISTANCES and test them
 # parameters
-FEATURES = [
+FEATURE_DISTANCES = [
 	#('left elbow', 'left wrist', 0.26), # avg male 0.26; avg female 0,235 (estimate)
 	#('right elbow', 'right wrist', 0.26), # avg male 0.26; avg female 0,235 (estimate)
 	('left ankle', 'left knee', 0.45), # avg male 0.45; avg female 0.415 (valid)

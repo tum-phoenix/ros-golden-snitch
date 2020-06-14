@@ -7,14 +7,22 @@ class Keypoint_Filter:
     """
     Filter apllied to all keypoints in pixel coordinates
     """
-    def __init__(self, k, max_dist_pixels,num_of_continuity_frames):
+    def __init__(self, k, max_dist_pixels,num_of_continuity_frames, FEATURES):
         """
         @param k: (0, 1) The filter constant. Small value -> Slow dynamics, Large value -> More noise.
         @param max_dist_pixels: (0, ->) The threshold for deviation from previous estimate for discarding is as an outlier.
         """
         self.k = k
         self.max_dist_pixels = max_dist_pixels
+        self.num_of_continuity_frames = num_of_continuity_frames
+        self.FEATURES = FEATURES
 
+    def update(self, keypoints):
+        if self.keypoints is None:
+            self.keypoints = keypoints
+        for (key, value) in keypoints:
+            self.keypoints[key].yx = value.yx * self.k + self.keypoints[key].yx * (1 - self.k)
+        return self.keypoints
 
 
 class Average_Filter:

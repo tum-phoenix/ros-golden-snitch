@@ -5,8 +5,8 @@ Calcualtes the distance and the player position for each frame.
 The communication with other system components is organised via ros.
 """
 
-from config import THRESHOLD, FEATURES, FOCAL_LENGTH, ENGINE
-from filter import *
+from src.config import THRESHOLD, FEATURE_DISTANCES, FOCAL_LENGTH, ENGINE, FEATURES
+from src.filter import *
 
 import numpy as np
 import cv2
@@ -59,7 +59,7 @@ def add_pose(poses, frame):
                 y, x = tuple(keypoints[name].yx)
                 frame = cv2.circle(frame, (x, y), 2, (255, 0, 0), 2)
                 # frame[int(position[0])-1][int(position[1])-1] = 255
-        for feature1, feature2, _ in FEATURES:
+        for feature1, feature2, _ in FEATURE_DISTANCES:
             point_1 = keypoints[feature1]
             point_2 = keypoints[feature2]
             if point_1.score > THRESHOLD and point_2.score > THRESHOLD:
@@ -105,6 +105,8 @@ class Processor:
         self.outlier_rejection = Outlier_Rejection()
         self.BRIDGE = CvBridge()
         self.average_filter = filter.Average_Filter()
+        # TODO Read this values from the configuration
+        self.keypoint_filter = filter.Keypoint_Filter(0.3, 25, 5, FEATURES)
 
     def cal_distance(self, poses):
         """
@@ -119,7 +121,8 @@ class Processor:
             for pose in poses:
                 feature_dis = []
                 keypoints = pose.keypoints
-                for f_name_1, f_name_2, dis in FEATURES:
+                keypoints = self.keypoint_filter.update(keypoints)
+                for f_name_1, f_name_2, dis in FEATURE_DISTANCES:
                     keypoint_1 = keypoints[f_name_1]
                     keypoint_2 = keypoints[f_name_2]
                     if keypoint_1.score > THRESHOLD and keypoint_2.score > THRESHOLD:
