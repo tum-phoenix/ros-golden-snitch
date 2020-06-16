@@ -1,6 +1,6 @@
 # Phoenix added
 .idea/*
-
+*./idea/*
 # Automatic python added:
 # Byte-compiled / optimized / DLL files
 __pycache__/
