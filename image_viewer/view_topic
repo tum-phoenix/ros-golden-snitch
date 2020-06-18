@@ -9,7 +9,7 @@ def main(args):
     viewer.start()
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Image downsample')
+    parser = argparse.ArgumentParser(description='Image topic viewer')
     parser.add_argument('--verbose', '-v', dest='verbose', action='store_true')
     parser.add_argument('topic', type=str, help='ROS topic')
     args = parser.parse_args()
