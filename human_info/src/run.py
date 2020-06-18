@@ -4,8 +4,9 @@ Script for processing the camera frames.
 Calcualtes the distance and the player position for each frame.
 The communication with other system components is organised via ros.
 """
-from config import *
-from filter import *
+
+from config import FOCAL_LENGTH, THRESHOLD, FEATURE_DISTANCES, ENGINE, MAX, FEATURES
+import filter
 import numpy as np
 import cv2
 import rospy
@@ -79,27 +80,14 @@ def add_centroids(frame, center, avg):
     return frame
 
 
-def process_frame(frame):
-    """
-    Calculatest he distance and position of the player and the detected human features
 
-    @param frame The camera frame
-    @return (distance, (frame center, pose average, horizontal_angle, vertical_angle), poses)
-    """
-
-    # prediction
-    poses, inference_time = ENGINE.DetectPosesInImage(np.uint8(frame))
-
-    distance = cal_distance(poses)
-    position = pos_from_center(poses, frame.shape[:-1])
-    return distance, position, poses
 
 
 class Processor:
     def __init__(self):
         self.pub = rospy.Publisher('human_info', HumanPos, queue_size=1)
         # we create the outlier_rejection here, because we need to continually save the distance to each feature, so this can not happen within one frame, but over the course of all the frames
-        self.outlier_rejection = Outlier_Rejection()
+        self.outlier_rejection = filter.Outlier_Rejection()
         self.BRIDGE = CvBridge()
         self.average_filter = filter.Average_Filter()
         # TODO Read this values from the configuration
@@ -143,6 +131,21 @@ class Processor:
                 return distance
         return None
 
+    def process_frame(self, frame):
+        """
+        Calculatest he distance and position of the player and the detected human features
+
+        @param frame The camera frame
+        @return (distance, (frame center, pose average, horizontal_angle, vertical_angle), poses)
+        """
+
+        # prediction
+        poses, inference_time = ENGINE.DetectPosesInImage(np.uint8(frame))
+
+        distance = self.cal_distance(poses)
+        position = pos_from_center(poses, frame.shape[:-1])
+        return distance, position, poses
+
 
     def ros_callback(self, frame):
         """
@@ -152,7 +155,7 @@ class Processor:
         """
         frame = self.BRIDGE.imgmsg_to_cv2(frame, "bgr8")
         frame = cv2.resize(frame, (640, 480))
-        distance, position, poses = process_frame(frame)
+        distance, position, poses = self.process_frame(frame)
         """
         if position is not None:
         center, avg, h_angle, v_angle = position
