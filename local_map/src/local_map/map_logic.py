@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 import numpy as np
-from rospy import loginfo
+#from rospy import loginfo
 
 
 class Mapper:
-    def __init__(self, dirOfRangeSensosr):
+    def __init__(self, dirOfRangeSensors, distCenterDroneRangeSens):
         # The map is a list of 3d point coordinates where each point is (x, y, z,)
         self.map = []
-        self.dirOfRangeSensors = dirOfRangeSensosr
+        self.dirOfRangeSensors = dirOfRangeSensors
+        self.distCenterDroneRangeSens = distCenterDroneRangeSens
 
 
     def update(self, ranges : np.ndarray, position, orientation):
@@ -19,9 +20,12 @@ class Mapper:
         return self.map
 
 
-def _update_map(map, dirOfRangeSensors, ranges, position, orientation):
-    # distance of range sensors from center of drone TODO: measure on drone and include in config file
-    distCenterDroneRangeSens = 0.1  # initial guess
+def _update_map(map, dirOfRangeSensors, distCenterDroneRangeSens, ranges, position, orientation):
+
+    # delete values where range value is out of range
+    ranges = ranges[ranges < 2.1]
+    dirOfRangeSensors = dirOfRangeSensors[ranges < 2.1]
+    numberRangeSensors = ranges.size
 
     # rotation matrix from orientation quaternion
     q_w = orientation[0]
@@ -33,21 +37,24 @@ def _update_map(map, dirOfRangeSensors, ranges, position, orientation):
          [2 * (q_x * q_y + q_w * q_z), 1 - 2 * (q_x ** 2 + q_z ** 2), 2 * (q_y * q_z - q_x * q_w)],
          [2 * (q_x * q_z - q_w * q_y), 2 * (q_y * q_z + q_w * q_x), 1 - 2 * (q_x ** 2 + q_y ** 2)]])
 
-    # range sensor direction vectors in drone frame of reference
+    # range sensor direction vectors in drone FoR
     row1 = np.cos(dirOfRangeSensors)
     row2 = np.sin(dirOfRangeSensors)
-    row3 = np.zeros((1, dirOfRangeSensors.size))
+    row3 = np.zeros((1, numberRangeSensors))
     dirVectInDroneFOR = np.vstack([row1, row2, row3])
 
-    pointCoordInDroneFOR = dirVectInDroneFOR.copy
-    # either do vector after vector --> col1, col2, ... , col8 and then hstack or for-loop TODO
-    # basic idea: pointCoordInDroneFOR[i] = (ranges[i] + distCenterDroneRangeSens) * dirVectInDroneFOR[:,i]
+    # calculate the coordinates in drone FoR
+    pointCoordInDroneFOR = dirVectInDroneFOR.copy()
+    for x in range(0, numberRangeSensors):
+        pointCoordInDroneFOR[:, x] = (ranges[x] + distCenterDroneRangeSens) * dirVectInDroneFOR[:, x]
 
-    # transformation to world frame of reference
-    dronePos = np.repeat(position, 8, axis=1)
+    # transformation to world FoR
+    dronePos = np.repeat(position, numberRangeSensors, axis=1)
     pointCoordInWorldFOR = np.matmul(orientation_matrix,
                                      pointCoordInDroneFOR) + dronePos
 
-    # add new points to map --> pointCoordInWorldFOR(:,i) TODO
+    # add new points to map
+    for x in range(0, numberRangeSensors):
+        map = np.hstack(map, pointCoordInWorldFOR[:, x])
 
     return map

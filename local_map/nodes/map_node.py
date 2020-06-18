@@ -17,7 +17,8 @@ class Server:
         with open(rospack.get_path("phx_launch")+"/../config/hardware_config.yaml") as f:
             mechanical_config = yaml.load(f, Loader=yaml.SafeLoader)
         dirOfRangeSensors = mechanical_config["direction_of_range_sensors"]
-        self.mapper = Mapper(dirOfRangeSensors)
+        distCenterDroneRangeSens = mechanical_config["dist_of_range_sensors_from_center"]
+        self.mapper = Mapper(np.array(dirOfRangeSensors), distCenterDroneRangeSens)
         self.pub = rospy.Publisher("phx/local_map", PointCloud, queue_size=1)
 
 
