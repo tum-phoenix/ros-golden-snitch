@@ -9,12 +9,12 @@ from mavros import setpoint as SP
 from teraranger_array.msg import RangeArray
 from human_info.msg import HumanPos
 # from react_agent import Decision_tree
-from react_agent.decision_tree import Decision
+from react_agent.decision import Decision
 from geometry_msgs.msg import PoseStamped, Quaternion
 from std_msgs.msg import Header
 from geometry_msgs.msg import Twist, Vector3
 from mavros_msgs.msg import PositionTarget
-from tf.transformations import quaternion_from_euler
+# from tf.transformations import quaternion_from_euler
 import numpy as np
 
 
@@ -65,6 +65,7 @@ def _convert_to_mavros_vel_message(setpoint) -> Twist:
 
 def _convert_to_mavros_pos_message_pose_stamped(setpoint) -> PoseStamped:
     # To be used with geometry_msg.Pose
+    rospy.logerr("This is not implemented")
     res = PoseStamped()
     res.header = Header()
     res.header.stamp = rospy.Time.now()
@@ -99,7 +100,8 @@ if __name__ == '__main__':
 
     server = Server()
 
-    rospy.Subscriber('/human_info/human_info', HumanPos, server.human_tracking_callback)
+    rospy.Subscriber('/human_info', HumanPos, server.human_tracking_callback)
     rospy.Subscriber('/multiflex_1/ranges_raw', RangeArray, server.ranges_callback)
+    rospy.loginfo("React agent is initialized")
 
     rospy.spin()

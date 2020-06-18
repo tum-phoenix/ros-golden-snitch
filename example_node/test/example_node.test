@@ -1,0 +1,3 @@
+<launch>
+  <test test-name="examle_node_test" pkg="example_node" type="example_logic_test.py" />
+</launch>

@@ -1,0 +1,8 @@
+<launch>
+    <node pkg="rosbag" type="play" name="play" required="true" args="/home/pi/rosbags/human_test.bag"/>
+    <node pkg="human_info" type="run.py" name="human_info" required="true"/>    
+    <node pkg="observer" type="observe.py" name="observer" required="true"/>
+    <node name="extract" pkg="image_view" type="extract_images" respawn="false" required="true" output="screen" cwd="ROS_HOME">
+        <remap from="image" to="/observe"/>
+    </node>
+</launch>

@@ -4,17 +4,14 @@ Script for processing the camera frames.
 Calcualtes the distance and the player position for each frame.
 The communication with other system components is organised via ros.
 """
-
-from src.config import THRESHOLD, FEATURE_DISTANCES, FOCAL_LENGTH, ENGINE, FEATURES
-from src.filter import *
-
+from config import *
+from filter import *
 import numpy as np
 import cv2
 import rospy
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 from human_info.msg import HumanPos
-
 
 def pos_from_center(poses, shape):
     """
@@ -178,8 +175,6 @@ class Processor:
         self.pub.publish(msg)
         # cv2.imshow('CAM', frame)
         # cv2.waitKey(1)
-
-
 
 
 def ros_run():
