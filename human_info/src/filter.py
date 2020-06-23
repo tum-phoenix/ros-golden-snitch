@@ -29,7 +29,7 @@ class Keypoint_Filter:
             for k in keypoints.keys():
                 self.repetitions_left[k] = self.num_of_continuity_frames
         for (key, value) in list(keypoints.items()):
-            if normsq(self.keypoints[key].yz, value.yx) > self.OUTLIER_THRESHOLD:
+            if normsq(self.keypoints[key].yx, value.yx) > self.OUTLIER_THRESHOLD:
                 # This is probably an outlier
                 del keypoints[key]
             self.keypoints[key].yx = value.yx * self.k + self.keypoints[key].yx * (1 - self.k)
