@@ -32,7 +32,8 @@ class Keypoint_Filter:
             if normsq(self.keypoints[key].yx, value.yx) > self.OUTLIER_THRESHOLD:
                 # This is probably an outlier
                 del keypoints[key]
-            self.keypoints[key].yx = value.yx * self.k + self.keypoints[key].yx * (1 - self.k)
+            self.keypoints[key].yx[0] = value.yx[0] * self.k + self.keypoints[key].yx[0] * (1 - self.k)
+            self.keypoints[key].yx[1] = value.yx[1] * self.k + self.keypoints[key].yx[1] * (1 - self.k)
             self.keypoints[key].score = value.score
         return self.keypoints
 

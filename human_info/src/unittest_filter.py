@@ -39,7 +39,7 @@ class TestHumanInfo(unittest.TestCase):
         self.outlier_rejection = filter.Outlier_Rejection()
         for i in self.input:
             self.distance = 100 * i
-            self.updated_distance = self.outlier_rejection.update(self.distance)
+            self.updated_distance = self.outlier_rejection.update(self.distance, "right shoulder")
         self.assertTrue(abs(max(self.outlier_rejection.lst) - min(self.outlier_rejection.lst)) / 100 < 0.9 * (
                 self.max_input - self.min_input))
 
