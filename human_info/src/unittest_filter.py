@@ -39,7 +39,7 @@ class TestHumanInfo(unittest.TestCase):
         self.outlier_rejection = filter.Outlier_Rejection()
         for i in self.input:
             self.distance = 100 * i
-            self.updated_distance = self.outlier_rejection.update(self.distance, "right shoulder")
+            self.updated_distance = self.outlier_rejection.update(self.distance, 'nose')
         self.assertTrue(abs(max(self.outlier_rejection.lst) - min(self.outlier_rejection.lst)) / 100 < 0.9 * (
                 self.max_input - self.min_input))
 
@@ -67,14 +67,14 @@ class TestHumanInfo(unittest.TestCase):
 
         kpfilter = filter.Keypoint_Filter(0.5, 2, FEATURES, 50 ** 2)
 
-        kpfilter.update(keypoints)
+        keypoints = kpfilter.update(keypoints)
 
         keypoints2 = keypoints.copy()
         self.assertEqual(keypoints, keypoints2)
 
         keypoints2["nose"].yx[0] -= 40
         keypoints3 = keypoints2.copy()
-        kpfilter.update(keypoints2)
+        keypoints2 = kpfilter.update(keypoints2)
         self.assertNotEqual(keypoints2, keypoints3)
         self.assertNotEqual(keypoints2, keypoints)
 
