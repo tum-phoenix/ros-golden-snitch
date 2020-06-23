@@ -2,7 +2,7 @@
 Contains filters used in human pose estimation
 
 """
-
+import copy
 
 def normsq(x, y):
     return  (x[0] - y[0])**2 + (x[1] - y[1])**2
@@ -22,7 +22,8 @@ class Keypoint_Filter:
         self.OUTLIER_THRESHOLD = OUTLIER_THRESHOLD
         self.keypoints = None
 
-    def update(self, keypoints):
+    def update(self, keypoints_in):
+        keypoints = copy.deepcopy(keypoints_in)
         if self.keypoints is None:
             self.keypoints = keypoints
             self.repetitions_left = {}
@@ -35,7 +36,7 @@ class Keypoint_Filter:
             self.keypoints[key].yx[0] = value.yx[0] * self.k + self.keypoints[key].yx[0] * (1 - self.k)
             self.keypoints[key].yx[1] = value.yx[1] * self.k + self.keypoints[key].yx[1] * (1 - self.k)
             self.keypoints[key].score = value.score
-        return self.keypoints
+        return copy.deepcopy(self.keypoints)
 
 
 class Average_Filter:
@@ -75,7 +76,7 @@ class Outlier_Rejection:
     def update(self, new_dist, keypoint_type):
 
         # if there is no entry, for that feature, in the dictionary, this is the first pose with that feature
-        if  self.lst[keypoint_type] is not None:
+        if not keypoint_type in self.lst:
             self.lst[keypoint_type] = new_dist
             return self.lst[keypoint_type]
         # otherwise check the difference between this new pose distance, and the old one; if it's bigger that max_difference, this is an outlier, and should be ignored
