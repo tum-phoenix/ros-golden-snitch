@@ -75,7 +75,7 @@ class Outlier_Rejection:
     def update(self, new_dist, keypoint_type):
 
         # if there is no entry, for that feature, in the dictionary, this is the first pose with that feature
-        if not self.lst[keypoint_type]:
+        if  self.lst[keypoint_type] is not None:
             self.lst[keypoint_type] = new_dist
             return self.lst[keypoint_type]
         # otherwise check the difference between this new pose distance, and the old one; if it's bigger that max_difference, this is an outlier, and should be ignored

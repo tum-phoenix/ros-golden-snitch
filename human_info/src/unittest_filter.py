@@ -75,7 +75,7 @@ class TestHumanInfo(unittest.TestCase):
         keypoints2["nose"].yx[0] -= 40
         keypoints3 = keypoints2.copy()
         keypoints2 = kpfilter.update(keypoints2)
-        self.assertNotEqual(keypoints2, keypoints3)
+        self.assertNotEqual(keypoints2["nose"].yx[0], keypoints3["nose"].yx[0])
         self.assertNotEqual(keypoints2, keypoints)
 
     def test_shouldfail(self):
