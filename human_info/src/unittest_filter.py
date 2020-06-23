@@ -23,5 +23,10 @@ class TestHumanInfo(unittest.TestCase):
             self.updated_distance = self.outlier_rejection.update(self.distance)
         self.assertTrue(abs(max(self.outlier_rejection.lst)-min(self.outlier_rejection.lst))/100 < 0.9*(self.max_input -self.min_input))
 
+    def test_keypoint_filter(self):
+        # TODO Get a copy of the keypoint datastructure.
+        pass
+
+
 if __name__ == '__main__':
     unittest.main()

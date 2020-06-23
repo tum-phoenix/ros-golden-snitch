@@ -3,24 +3,35 @@ Contains filters used in human pose estimation
 
 """
 
+
+def normsq(x, y):
+    return  (x[0] - y[0])**2 + (x[1] - y[1])**2
+
 class Keypoint_Filter:
     """
     Filter apllied to all keypoints in pixel coordinates
     """
-    def __init__(self, k, max_dist_pixels,num_of_continuity_frames, FEATURES):
+    def __init__(self, k, num_of_continuity_frames, FEATURES, OUTLIER_THRESHOLD):
         """
         @param k: (0, 1) The filter constant. Small value -> Slow dynamics, Large value -> More noise.
         @param max_dist_pixels: (0, ->) The threshold for deviation from previous estimate for discarding is as an outlier.
         """
         self.k = k
-        self.max_dist_pixels = max_dist_pixels
         self.num_of_continuity_frames = num_of_continuity_frames
         self.FEATURES = FEATURES
+        self.OUTLIER_THRESHOLD = OUTLIER_THRESHOLD
+        self.keypoints = None
 
     def update(self, keypoints):
         if self.keypoints is None:
             self.keypoints = keypoints
-        for (key, value) in keypoints:
+            self.repetitions_left = {}
+            for k in keypoints.keys():
+                self.repetitions_left[k] = self.num_of_continuity_frames
+        for (key, value) in list(keypoints.items()):
+            if normsq(self.keypoints[key].yz, value.yx) > self.OUTLIER_THRESHOLD:
+                # This is probably an outlier
+                del keypoints[key]
             self.keypoints[key].yx = value.yx * self.k + self.keypoints[key].yx * (1 - self.k)
         return self.keypoints
 

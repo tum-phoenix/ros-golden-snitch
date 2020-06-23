@@ -4,6 +4,8 @@ Script for processing the camera frames.
 Calcualtes the distance and the player position for each frame.
 The communication with other system components is organised via ros.
 """
+import rospkg
+import yaml
 
 from config import FOCAL_LENGTH, THRESHOLD, FEATURE_DISTANCES, ENGINE, MAX, FEATURES
 import filter
@@ -90,8 +92,10 @@ class Processor:
         self.outlier_rejection = filter.Outlier_Rejection()
         self.BRIDGE = CvBridge()
         self.average_filter = filter.Average_Filter()
-        # TODO Read this values from the configuration
-        self.keypoint_filter = filter.Keypoint_Filter(0.3, 25, 5, FEATURES)
+        rospack = rospkg.RosPack()
+        with open(rospack.get_path("phx_launch") + "/../config/software_config.yaml") as f:
+            sw_config = yaml.load(f, Loader=yaml.SafeLoader)
+        self.keypoint_filter = filter.Keypoint_Filter(sw_config["filter_constant_keypoints"], sw_config["num_of_frames_conitunuity"], FEATURES, sw_config["outlier_threshold_keypoint_pixels"])
 
     def cal_distance(self, poses):
         """
@@ -116,10 +120,10 @@ class Processor:
                             keypoint_1.yx - keypoint_2.yx, ord=1)
                         distance = dis * FOCAL_LENGTH / pix_distance
                         # filtering odd values
-                        distance = self.outlier_rejection.update(distance, f_name_1)
+                        # distance = self.outlier_rejection.update(distance, f_name_1)
                         # only append distance, if it doesn't differenciate too much from the same keypoint, last frame
-                        if distance != -1:
-                            feature_dis.append(distance)
+                        # if distance != -1:
+                        feature_dis.append(distance)
 
                 if len(feature_dis) > 0:
                     # avg over feature distances
