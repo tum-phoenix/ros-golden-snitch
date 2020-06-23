@@ -111,6 +111,7 @@ class Processor:
                 feature_dis = []
                 keypoints = pose.keypoints
                 keypoints = self.keypoint_filter.update(keypoints)
+                print("Amoun of keypoints:",len(keypoints))
                 for f_name_1, f_name_2, dis in FEATURE_DISTANCES:
                     keypoint_1 = keypoints[f_name_1]
                     keypoint_2 = keypoints[f_name_2]
@@ -124,7 +125,7 @@ class Processor:
                         # only append distance, if it doesn't differenciate too much from the same keypoint, last frame
                         # if distance != -1:
                         feature_dis.append(distance)
-
+                print("Amoun of distances: ",len(feature_dis))
                 if len(feature_dis) > 0:
                     # avg over feature distances
                     distance = sum(feature_dis) / len(feature_dis)

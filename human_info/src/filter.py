@@ -33,6 +33,7 @@ class Keypoint_Filter:
                 # This is probably an outlier
                 del keypoints[key]
             self.keypoints[key].yx = value.yx * self.k + self.keypoints[key].yx * (1 - self.k)
+            self.keypoints[key].score = value.score
         return self.keypoints
 
 
