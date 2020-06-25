@@ -10,7 +10,7 @@ from pose_engine import PoseEngine
 
 ERASE_LINE = '\x1b[2K'
 
-# possible FEATURE_DISTANCES
+# possible FEATURES
 FEATURES = ['nose', 'left eye', 'right eye', 'left ear', 'right ear', 'left shoulder', 'right shoulder', 'left elbow', 'right elbow', 'left wrist', 'right wrist', 'left hip', 'right hip', 'left knee', 'right knee', 'left ankle', 'right ankle']
 
 
@@ -38,4 +38,3 @@ FOCAL_LENGTH = 7.395847924773853e+02/2.3 #4.533079645790183e+02
 
 ENGINE = PoseEngine(os.path.join(path,
             'src/project-posenet/models/posenet_mobilenet_v1_075_481_641_quant_decoder_edgetpu.tflite'))
-
