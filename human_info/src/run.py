@@ -179,8 +179,6 @@ class Processor:
             msg.v_angle = 0
             msg.distance = -1
         self.pub.publish(msg)
-        # cv2.imshow('CAM', frame)
-        # cv2.waitKey(1)
 
 
 def ros_run():
