@@ -16,6 +16,7 @@ from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 from human_info.msg import HumanPos
 
+
 def pos_from_center(poses, shape):
     """
     In progress
@@ -38,9 +39,6 @@ def pos_from_center(poses, shape):
         horizontal_angle = np.arctan(x / FOCAL_LENGTH)
         vertical_angle = np.arctan(y / FOCAL_LENGTH)
         return center.astype('int'), avg.astype('int'), horizontal_angle, vertical_angle
-
-
-
 
 
 def add_pose(poses, frame):
@@ -82,9 +80,6 @@ def add_centroids(frame, center, avg):
     return frame
 
 
-
-
-
 class Processor:
     def __init__(self):
         self.pub = rospy.Publisher('human_info', HumanPos, queue_size=1)
@@ -95,7 +90,9 @@ class Processor:
         rospack = rospkg.RosPack()
         with open(rospack.get_path("phx_launch") + "/../config/software_config.yaml") as f:
             sw_config = yaml.load(f, Loader=yaml.SafeLoader)
-        self.keypoint_filter = filter.Keypoint_Filter(sw_config["filter_constant_keypoints"], sw_config["num_of_frames_conitunuity"], FEATURES, sw_config["outlier_threshold_keypoint_pixels"])
+        self.keypoint_filter = filter.Keypoint_Filter(sw_config["filter_constant_keypoints"],
+                                                      sw_config["num_of_frames_conitunuity"], FEATURES,
+                                                      sw_config["outlier_threshold_keypoint_pixels"])
 
     def cal_distance(self, poses):
         """
@@ -148,7 +145,6 @@ class Processor:
         distance = self.cal_distance(poses)
         position = pos_from_center(poses, frame.shape[:-1])
         return distance, position, poses
-
 
     def ros_callback(self, frame):
         """
