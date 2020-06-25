@@ -4,13 +4,16 @@ Contains filters used in human pose estimation
 """
 import copy
 
+
 def normsq(x, y):
-    return  (x[0] - y[0])**2 + (x[1] - y[1])**2
+    return (x[0] - y[0]) ** 2 + (x[1] - y[1]) ** 2
+
 
 class Keypoint_Filter:
     """
     Filter apllied to all keypoints in pixel coordinates
     """
+
     def __init__(self, k, num_of_continuity_frames, FEATURES, OUTLIER_THRESHOLD):
         """
         @param k: (0, 1) The filter constant. Small value -> Slow dynamics, Large value -> More noise.
@@ -22,10 +25,9 @@ class Keypoint_Filter:
         self.OUTLIER_THRESHOLD = OUTLIER_THRESHOLD
         self.keypoints = None
 
-    def update(self, keypoints_in):
-        keypoints = copy.deepcopy(keypoints_in)
+    def update(self, keypoints):
         if self.keypoints is None:
-            self.keypoints = keypoints
+            self.keypoints = copy.deepcopy(keypoints)
             self.repetitions_left = {}
             for k in keypoints.keys():
                 self.repetitions_left[k] = self.num_of_continuity_frames
