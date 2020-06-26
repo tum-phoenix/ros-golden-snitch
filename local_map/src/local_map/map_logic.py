@@ -34,7 +34,7 @@ def _update_map(local_map, age, dirOfRangeSensors, distCenterDroneRangeSens, ran
     iter_vec = iteration * np.ones((1, numberRangeSensors), dtype='int32')
 
     # check whether the oldest sensor readings are too old
-    if len(set(age)) < max_readingage:
+    if (age.max()-age.min()) < max_readingage:
         age = np.append(age, iter_vec)
 
     else:   # delete earlier values TODO
