@@ -25,9 +25,6 @@ class Mapper:
 
 def _update_map(local_map, age, dirOfRangeSensors, distCenterDroneRangeSens, ranges, position, orientation, max_readingage, iteration):
 
-
-
-
     # delete values where range value is out of range
     dirOfRangeSensors = dirOfRangeSensors[(ranges > 0) & ranges < 2.1]
     ranges = ranges[(ranges > 0) & (ranges < 2.1)]
