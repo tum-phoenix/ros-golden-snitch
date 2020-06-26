@@ -4,11 +4,14 @@ import numpy as np
 
 
 class Mapper:
-    def __init__(self, dirOfRangeSensors, distCenterDroneRangeSens):
+    def __init__(self, dirOfRangeSensors, distCenterDroneRangeSens, max_mapsize):
         # The map is a list of 3d point coordinates where each point is (x, y, z,)
-        self.map = []
+        self.local_map = []
+        self.age = []
+        self.max_mapsize = max_mapsize
         self.dirOfRangeSensors = dirOfRangeSensors
         self.distCenterDroneRangeSens = distCenterDroneRangeSens
+        iteration = 0 #tracks the current "version" of readings to assign an age to range values
 
 
     def update(self, ranges : np.ndarray, position, orientation):
@@ -16,23 +19,33 @@ class Mapper:
         @param position: 3 element list x, y, z
         @param orientation: 4 element unit quaternion with w first: [w, x, y, x]
         """
-        self.map = _update_map(self.map,self.dirOfRangeSensors, ranges, position, orientation)
+        self.map = _update_map(self.local_map, self.age, self.dirOfRangeSensors, self.distCenterDroneRangeSens, ranges, position, orientation, max_mapsize, iteration)
         return self.map
 
 
-def _update_map(map, dirOfRangeSensors, distCenterDroneRangeSens, ranges, position, orientation):
+def _update_map(local_map, age, dirOfRangeSensors, distCenterDroneRangeSens, ranges, position, orientationm max_mapsize, iteration):
 
     # delete values where range value is out of range
-    ranges = ranges[ranges < 2.1]
-    dirOfRangeSensors = dirOfRangeSensors[ranges < 2.1]
+    dirOfRangeSensors = dirOfRangeSensors[(ranges > 0) & ranges < 2.1]
+    ranges = ranges[(ranges > 0) & (ranges < 2.1)]
     numberRangeSensors = ranges.size
+
+    # check if there is still enough space to store incoming range values
+    if len(age) < max_mapsize - ranges.size:
+        iter_vec = iteration * np.ones((1,numberRangeSensors)) #age is a row vector
+        age = np.append(age, iter_vec)
+        iteration += 1
+    else:   # delete earlier values TODO
+
+
 
     # rotation matrix from orientation quaternion
     q_w = orientation[0]
     q_x = orientation[1]
     q_y = orientation[2]
     q_z = orientation[3]
-    orientation_matrix = np.array(
+    # rotation from drone FoR to world FoR
+    R_dw = np.array(
         [[1 - 2 * (q_y ** 2 + q_z ** 2), 2 * (q_x * q_y - q_w * q_z), 2 * (q_x * q_z + q_y * q_w)],
          [2 * (q_x * q_y + q_w * q_z), 1 - 2 * (q_x ** 2 + q_z ** 2), 2 * (q_y * q_z - q_x * q_w)],
          [2 * (q_x * q_z - q_w * q_y), 2 * (q_y * q_z + q_w * q_x), 1 - 2 * (q_x ** 2 + q_y ** 2)]])
@@ -41,7 +54,7 @@ def _update_map(map, dirOfRangeSensors, distCenterDroneRangeSens, ranges, positi
     row1 = np.cos(dirOfRangeSensors)
     row2 = np.sin(dirOfRangeSensors)
     row3 = np.zeros((1, numberRangeSensors))
-    dirVectInDroneFOR = np.vstack([row1, row2, row3])
+    dirVectInDroneFOR = np.vstack([row1, row2, row3]) #dimension:(3, numberRangeSensors)
 
     # calculate the coordinates in drone FoR
     pointCoordInDroneFOR = dirVectInDroneFOR.copy()
@@ -50,11 +63,10 @@ def _update_map(map, dirOfRangeSensors, distCenterDroneRangeSens, ranges, positi
 
     # transformation to world FoR
     dronePos = np.repeat(position, numberRangeSensors, axis=1)
-    pointCoordInWorldFOR = np.matmul(orientation_matrix,
-                                     pointCoordInDroneFOR) + dronePos
+    pointCoordInWorldFOR = np.matmul(R_dw, pointCoordInDroneFOR) + dronePos
 
     # add new points to map
     for x in range(0, numberRangeSensors):
-        map = np.hstack(map, pointCoordInWorldFOR[:, x])
+        local_map = np.hstack(local_map, pointCoordInWorldFOR[:, x])
 
-    return map
+    return local_map
