@@ -11,7 +11,7 @@ class Mapper:
         self.max_readingage = max_readingage
         self.dirOfRangeSensors = dirOfRangeSensors
         self.distCenterDroneRangeSens = distCenterDroneRangeSens
-        iteration = 0 #tracks the current "version" of readings to assign an age to s
+        iteration = 0  # tracks the current "version" of readings to assess reading age
 
 
     def update(self, ranges : np.ndarray, position, orientation):
@@ -19,8 +19,8 @@ class Mapper:
         @param position: 3 element list x, y, z
         @param orientation: 4 element unit quaternion with w first: [w, x, y, x]
         """
-        self.map = _update_map(self.local_map, self.age, self.dirOfRangeSensors, self.distCenterDroneRangeSens, ranges, position, orientation, max_readingage, iteration)
-        return self.map
+        self.local_map = _update_map(self.local_map, self.age, self.dirOfRangeSensors, self.distCenterDroneRangeSens, ranges, position, orientation, max_readingage, iteration)
+        return self.local_map
 
 
 def _update_map(local_map, age, dirOfRangeSensors, distCenterDroneRangeSens, ranges, position, orientation, max_readingage, iteration):
@@ -30,17 +30,14 @@ def _update_map(local_map, age, dirOfRangeSensors, distCenterDroneRangeSens, ran
     ranges = ranges[(ranges > 0) & (ranges < 2.1)]
     numberRangeSensors = ranges.size
 
-    iteration += 1 # always increment iteration independently of sensor values
+    iteration += 1  # always increment iteration independently of sensor values
     iter_vec = iteration * np.ones((1, numberRangeSensors), dtype='int32')
 
-    # check whether the oldest sensor readings are too old
-    if (age.max()-age.min()) < max_readingage:
-        age = np.append(age, iter_vec)
-
-    else:   # delete earlier values TODO
-
-        # then add new ones
-        age = np.append(age, iter_vec)
+    # delete older sensor readings and add age of newest ones
+    while age[0] < iteration - max_readingage:
+        del age[0]
+        local_map = np.delete(local_map, 0, 1)
+    age = np.append(age, iter_vec)
 
     # rotation matrix from orientation quaternion
     q_w = orientation[0]
@@ -57,7 +54,7 @@ def _update_map(local_map, age, dirOfRangeSensors, distCenterDroneRangeSens, ran
     row1 = np.cos(dirOfRangeSensors)
     row2 = np.sin(dirOfRangeSensors)
     row3 = np.zeros((1, numberRangeSensors))
-    dirVectInDroneFOR = np.vstack([row1, row2, row3]) #dimension:(3, numberRangeSensors)
+    dirVectInDroneFOR = np.vstack([row1, row2, row3])  # dimension:(3, numberRangeSensors)
 
     # calculate the coordinates in drone FoR
     pointCoordInDroneFOR = dirVectInDroneFOR.copy()
