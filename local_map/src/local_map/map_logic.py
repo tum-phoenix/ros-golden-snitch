@@ -19,7 +19,7 @@ class Mapper:
         @param position: 3 element list x, y, z
         @param orientation: 4 element unit quaternion with w first: [w, x, y, x]
         """
-        self.local_map = _update_map(self.local_map, self.age, self.dirOfRangeSensors, self.distCenterDroneRangeSens, ranges, position, orientation, max_readingage, iteration)
+        self.local_map, self.age = _update_map(self.local_map, self.age, self.dirOfRangeSensors, self.distCenterDroneRangeSens, ranges, position, orientation, self.max_readingage, self.iteration)
         return self.local_map
 
 
@@ -69,4 +69,4 @@ def _update_map(local_map, age, dirOfRangeSensors, distCenterDroneRangeSens, ran
     for x in range(0, numberRangeSensors):
         local_map = np.hstack(local_map, pointCoordInWorldFOR[:, x])
 
-    return local_map
+    return local_map, age
