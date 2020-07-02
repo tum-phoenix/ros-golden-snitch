@@ -9,3 +9,12 @@ human_threshold: 2.0
 obstacle_threshold: 1.0
 flee_dist: 2.0
 search_rotation: 90
+
+## Human dist
+#In range (0, 1):
+filter_constant_keypoints : 0.5
+# [px^2] In pixels squared (It is compared to the squared norm of the old point and new point):
+outlier_threshold_keypoint_pixels : 2500
+#[frames] The number of frames to keep the value if the keypoint is not detected.
+num_of_frames_conitunuity : 2
+
