@@ -33,14 +33,6 @@ class TestHumanInfo(unittest.TestCase):
             self.updated_distance = self.average_filter.update(self.distance)
         self.assertTrue(abs(self.updated_distance) < 1)
 
-    def test_outlier_rejection(self):
-        self.outlier_rejection = filter.Outlier_Rejection()
-        for i in self.input:
-            self.distance = 100 * i
-            self.updated_distance = self.outlier_rejection.update(self.distance, 'nose')
-            # It does not work to take the max of the dictionary, sinc it will then try to get the max of the keys, which are strings:
-        # self.assertTrue(abs(max(self.outlier_rejection.lst) - min(self.outlier_rejection.lst)) / 100 < 0.9 * (
-        #         self.max_input - self.min_input))
 
     def test_keypoint_filter(self):
         keypoints = {'nose': Keypoint("nose", [81.410835, 304.39337], 0.9973853230476379),
