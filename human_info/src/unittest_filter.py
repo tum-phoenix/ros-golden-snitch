@@ -77,6 +77,17 @@ class TestHumanInfo(unittest.TestCase):
         self.assertNotEqual(keypoints2["nose"].yx[0], keypoints3["nose"].yx[0])
         self.assertNotEqual(keypoints2, keypoints)
 
+        oldKeypoints2 = kpfilter.update(keypoints2)
+        del keypoints2["nose"]
+        keypoints4 = kpfilter.update(keypoints2)
+        self.assertTrue("nose" in keypoints4)
+        kpfilter.update(keypoints2)
+        keypoints5 = kpfilter.update(keypoints2)
+        self.assertFalse("nose" in keypoints5)
+        keypoints6 = kpfilter.update(keypoints2)
+        self.assertFalse("nose" in keypoints6)
+
+
 
 if __name__ == '__main__':
     import rosunit

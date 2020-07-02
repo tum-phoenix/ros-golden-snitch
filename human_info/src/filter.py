@@ -31,13 +31,32 @@ class Keypoint_Filter:
             self.repetitions_left = {}
             for k in keypoints.keys():
                 self.repetitions_left[k] = self.num_of_continuity_frames
-        for (key, value) in list(keypoints.items()):
-            if normsq(self.keypoints[key].yx, value.yx) > self.OUTLIER_THRESHOLD:
-                # This is probably an outlier
-                del keypoints[key]
-            self.keypoints[key].yx[0] = value.yx[0] * self.k + self.keypoints[key].yx[0] * (1 - self.k)
-            self.keypoints[key].yx[1] = value.yx[1] * self.k + self.keypoints[key].yx[1] * (1 - self.k)
-            self.keypoints[key].score = value.score
+            for f in self.FEATURES:
+                if self.repetitions_left[f]  != self.num_of_continuity_frames:
+                    self.repetitions_left[f] = 0
+
+        for key in self.FEATURES:
+            if key in keypoints:
+                if key not in self.keypoints:
+                    self.keypoints[key] = keypoints[key]
+                if normsq(self.keypoints[key].yx, keypoints[key].yx) > self.OUTLIER_THRESHOLD:
+                    # This is probably an outlier
+                    if self.repetitions_left[key] >0:
+                        self.repetitions_left[key] -=1
+                    else:
+                        self.keypoints.pop(key, None)
+
+                self.keypoints[key].yx[0] = keypoints[key].yx[0] * self.k + self.keypoints[key].yx[0] * (1 - self.k)
+                self.keypoints[key].yx[1] = keypoints[key].yx[1] * self.k + self.keypoints[key].yx[1] * (1 - self.k)
+                self.keypoints[key].score = keypoints[key].score
+                self.repetitions_left[key] = self.num_of_continuity_frames
+            else:
+                # Track is lost
+                if self.repetitions_left[key] > 0:
+                    self.repetitions_left[key] -= 1
+                else:
+                    self.keypoints.pop(key, None)
+
         return copy.deepcopy(self.keypoints)
 
 
