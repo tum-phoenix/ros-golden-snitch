@@ -18,8 +18,12 @@ class Server:
             mechanical_config = yaml.load(f, Loader=yaml.SafeLoader)
         dirOfRangeSensors = mechanical_config["direction_of_range_sensors"]
         distCenterDroneRangeSens = mechanical_config["dist_of_range_sensors_from_center"]
-        self.mapper = Mapper(np.array(dirOfRangeSensors), distCenterDroneRangeSens)
+        with open(rospack.get_path("phx_launch")+"/../config/software_config.yaml") as f:
+            software_config = yaml.load(f, Loader=yaml.SafeLoader)
+        maxMapAge = software_config["max_age_map_point"]
+        self.mapper = Mapper(np.array(dirOfRangeSensors), distCenterDroneRangeSens, maxMapAge)
         self.pub = rospy.Publisher("phx/local_map", PointCloud, queue_size=1)
+        self.pos = None
 
 
     def ranges_callback(self, msg : RangeArray):
@@ -36,7 +40,7 @@ class Server:
         msg = PointCloud(header, points, [])
         self.pub.publish(msg)
 
-    def _pose_callback(self, msg: PoseStamped):
+    def pose_callback(self, msg: PoseStamped):
         self.pos = (msg.pose.position.x, msg.pose.position.y, msg.pose.position.z,)
         self.rot = (msg.pose.orientation.w, msg.pose.orientation.x, msg.pose.orientation.y, msg.pose.orientation.z,)
 
@@ -46,7 +50,7 @@ if __name__ == '__main__':
 
     server = Server()
 
-    rospy.Subscriber("/mavros/local_position/pose", PoseStamped, server._pose_callback)
+    rospy.Subscriber("/mavros/local_position/pose", PoseStamped, server.pose_callback)
     rospy.Subscriber('/multiflex_1/ranges_raw', RangeArray, server.ranges_callback)
     rospy.loginfo("Local mapper is initialized")
 

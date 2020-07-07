@@ -1,0 +1,4 @@
+<launch>
+    <node pkg="local_map" type="map_node.py" name="attitude_corrector" output="screen"/>
+    <test test-name="map_int_test" pkg="local_map" type="map_int_test.py" />
+</launch>

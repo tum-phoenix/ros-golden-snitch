@@ -18,3 +18,7 @@ outlier_threshold_keypoint_pixels : 2500
 #[frames] The number of frames to keep the value if the keypoint is not detected.
 num_of_frames_conitunuity : 2
 
+## Local map
+
+# [readings] The number of new ranges to be received before the oldest value is droped
+max_age_map_point : 500

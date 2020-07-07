@@ -11,7 +11,7 @@ class Mapper:
         self.max_readingage = max_readingage
         self.dirOfRangeSensors = dirOfRangeSensors
         self.distCenterDroneRangeSens = distCenterDroneRangeSens
-        iteration = 0  # tracks the current "version" of readings to assess reading age
+        self.iteration = 0  # tracks the current "version" of readings to assess reading age
 
 
     def update(self, ranges : np.ndarray, position, orientation):
