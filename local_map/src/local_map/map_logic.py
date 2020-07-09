@@ -1,31 +1,35 @@
 #!/usr/bin/env python3
 import numpy as np
-#from rospy import loginfo
+
+
+# from rospy import loginfo
 
 
 class Mapper:
-    def __init__(self, dirOfRangeSensors, distCenterDroneRangeSens, max_readingage):
+    def __init__(self, dirOfRangeSensors: np.array, distCenterDroneRangeSens, max_readingage):
         # The map is a list of 3d point coordinates where each point is (x, y, z,)
         self.local_map = []
+        # self.local_map = np.empty((3,0))
         self.age = []
         self.max_readingage = max_readingage
-        self.dirOfRangeSensors = dirOfRangeSensors
+        self.dirOfRangeSensors: np.array = dirOfRangeSensors
         self.distCenterDroneRangeSens = distCenterDroneRangeSens
         self.iteration = 0  # tracks the current "version" of readings to assess reading age
 
-
-    def update(self, ranges : np.ndarray, position, orientation):
+    def update(self, ranges: np.ndarray, position, orientation):
         """
         @param position: 3 element list x, y, z
         @param orientation: 4 element unit quaternion with w first: [w, x, y, x]
         """
-        self.local_map, self.age = _update_map(self.local_map, self.age, self.dirOfRangeSensors, self.distCenterDroneRangeSens, ranges, position, orientation, self.max_readingage, self.iteration)
+        self.local_map, self.age = _update_map(self.local_map, self.age, self.dirOfRangeSensors,
+                                               self.distCenterDroneRangeSens, ranges, position, orientation,
+                                               self.max_readingage, self.iteration)
         self.iteration += 1  # always increment iteration independently of sensor values
         return self.local_map
 
 
-def _update_map(local_map, age, dirOfRangeSensors, distCenterDroneRangeSens, ranges, position, orientation, max_readingage, iteration):
-
+def _update_map(local_map, age, dirOfRangeSensors, distCenterDroneRangeSens, ranges, position, orientation,
+                max_readingage, iteration):
     # delete values where range value is out of range
     dirOfRangeSensors = dirOfRangeSensors[(ranges > 0) & (ranges < 2.1)]
     ranges = ranges[(ranges > 0) & (ranges < 2.1)]
@@ -34,10 +38,10 @@ def _update_map(local_map, age, dirOfRangeSensors, distCenterDroneRangeSens, ran
     iter_vec = iteration * np.ones((1, numberRangeSensors), dtype='int32')
 
     # delete older sensor readings and add age of newest ones
+    age = np.append(age, iter_vec)
     while age[0] < iteration - max_readingage:
         del age[0]
-        local_map = np.delete(local_map, 0, 1)
-    age = np.append(age, iter_vec)
+        del local_map[0]
 
     # rotation matrix from orientation quaternion
     q_w = orientation[0]
@@ -61,11 +65,12 @@ def _update_map(local_map, age, dirOfRangeSensors, distCenterDroneRangeSens, ran
     for x in range(0, numberRangeSensors):
         pointCoordInDroneFOR[:, x] = (ranges[x] + distCenterDroneRangeSens) * dirVectInDroneFOR[:, x]
 
+    position = position.reshape((3, 1))
     # transformation to world FoR
     dronePos = np.repeat(position, numberRangeSensors, axis=1)
     pointCoordInWorldFOR = np.matmul(R_dw, pointCoordInDroneFOR) + dronePos
 
     # add new points to map
     for x in range(0, numberRangeSensors):
-        local_map = np.hstack(local_map, pointCoordInWorldFOR[:, x])
+        local_map.append(pointCoordInWorldFOR[:, x])
     return local_map, age

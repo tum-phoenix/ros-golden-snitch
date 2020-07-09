@@ -37,7 +37,7 @@ class TestLocalMapper(unittest.TestCase):
     def setUp(self) -> None:
         rospy.init_node("test_fsm", anonymous=True)
         self.rx = Rx()
-        rospy.Subscriber(MAP_TOPIC, PointCloud, self.rx.receivedMsg)
+        rospy.Subscriber(MAP_TOPIC, PointCloud, self.rx.receiveMap)
         self.range_pub = rospy.Publisher(RANGES_TOPIC, RangeArray, queue_size=1)
         self.pose_pub = rospy.Publisher(POSE_TOPIC, PoseStamped, queue_size=2)
 
@@ -45,7 +45,7 @@ class TestLocalMapper(unittest.TestCase):
         with open(rospack.get_path("phx_launch") + "/../config/hardware_config.yaml") as f:
             mechanical_config = yaml.load(f, Loader=yaml.SafeLoader)
         self.NUM_RANGE_SENSORS = mechanical_config["number_of_range_sensors"]
-        rospy.sleep(0.1)
+        rospy.sleep(0.5)
 
     def test_map_received(self):
         poseMsg = PoseStamped()
@@ -58,7 +58,6 @@ class TestLocalMapper(unittest.TestCase):
         poseMsg.pose.orientation.z = 0
         poseMsg.pose.orientation.w = 1
         self.pose_pub.publish(poseMsg)
-
 
         rangeMsg = RangeArray()
         rangeMsg.header = Header()
@@ -74,10 +73,9 @@ class TestLocalMapper(unittest.TestCase):
         rangeMsg.ranges = rangeMsg.ranges[:self.NUM_RANGE_SENSORS]
 
         self.range_pub.publish(rangeMsg)
+        rospy.sleep(0.2)
         self.assertEqual(self.rx.receivedMsg, True)
         self.assertGreater(len(self.rx.map.points), 0)
-
-        rospy.sleep(0.1)
 
 
 if __name__ == '__main__':
