@@ -20,17 +20,17 @@ class Mapper:
         @param orientation: 4 element unit quaternion with w first: [w, x, y, x]
         """
         self.local_map, self.age = _update_map(self.local_map, self.age, self.dirOfRangeSensors, self.distCenterDroneRangeSens, ranges, position, orientation, self.max_readingage, self.iteration)
+        self.iteration += 1  # always increment iteration independently of sensor values
         return self.local_map
 
 
 def _update_map(local_map, age, dirOfRangeSensors, distCenterDroneRangeSens, ranges, position, orientation, max_readingage, iteration):
 
     # delete values where range value is out of range
-    dirOfRangeSensors = dirOfRangeSensors[(ranges > 0) & ranges < 2.1]
+    dirOfRangeSensors = dirOfRangeSensors[(ranges > 0) & (ranges < 2.1)]
     ranges = ranges[(ranges > 0) & (ranges < 2.1)]
     numberRangeSensors = ranges.size
 
-    iteration += 1  # always increment iteration independently of sensor values
     iter_vec = iteration * np.ones((1, numberRangeSensors), dtype='int32')
 
     # delete older sensor readings and add age of newest ones
@@ -68,5 +68,4 @@ def _update_map(local_map, age, dirOfRangeSensors, distCenterDroneRangeSens, ran
     # add new points to map
     for x in range(0, numberRangeSensors):
         local_map = np.hstack(local_map, pointCoordInWorldFOR[:, x])
-
     return local_map, age
