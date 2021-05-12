@@ -1,0 +1,27 @@
+<?xml version='1.0'?>
+<sdf version="1.6" xmlns:xacro='http://ros.org/wiki/xacro'>
+  <model name="iris_with_sensors">
+    <include>
+      <uri>model://iris_with_ardupilot</uri>
+    </include>
+
+    <include>
+      <uri>model://distance_sensor</uri>
+      <pose>0 -0.01 0.10 1.57 0 1.57</pose>
+    </include>
+
+    <joint name="iris_sensor_mount" type="revolute">
+      <parent>iris_demo::iris::base_link</parent>
+      <child>distance_sensor::distance_sensor_link</child>
+      <axis>
+        <limit>
+          <lower>0</lower>
+          <upper>0</upper>
+        </limit>
+        <xyz>0 0 1</xyz>
+        <use_parent_model_frame>true</use_parent_model_frame>
+      </axis>
+    </joint>
+
+  </model>
+</sdf>
