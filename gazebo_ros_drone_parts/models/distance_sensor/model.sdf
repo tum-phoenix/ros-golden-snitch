@@ -3,8 +3,9 @@
   <model name='distance_sensor'>
     <pose>0 0 0 0 0 0</pose>
 
+<!-- distance sensor 00 -->
 
-    <link name='distance_sensor_link'>
+    <link name='distance_sensor_link_00'>
       <inertial>
         <pose>0 0 0 0 0 0</pose>
         <mass>0.0000000001</mass>
@@ -51,23 +52,29 @@
           </script>
         </material>
       </visual>
-      <sensor type="ray" name="head_hokuyo_sensor">
-      <pose>0 0 0 0 0 0</pose>
+      <sensor type="ray" name="range_sensor">
+      <pose>0.08090 0.0588 0 0 0 0.6283</pose>
       <visualize>true</visualize>
-      <update_rate>40</update_rate>
+      <update_rate>30</update_rate>
       <ray>
         <scan>
           <horizontal>
-            <samples>8</samples>
+            <samples>2</samples>
             <resolution>1</resolution>
-            <min_angle>-3.1416</min_angle>
-            <max_angle>2.35619</max_angle>
+            <min_angle>-0.1745</min_angle>
+            <max_angle>0.1745</max_angle>
           </horizontal>
+          <vertical>
+            <samples>2</samples>
+            <resolution>1</resolution>
+            <min_angle>-0.174533</min_angle>
+            <max_angle>0.174533</max_angle>
+          </vertical>
         </scan>
         <range>
           <min>0.10</min>
-          <max>80.0</max>
-          <resolution>0.01</resolution>
+          <max>1</max>
+          <resolution>0.001</resolution>
         </range>
         <noise>
           <type>gaussian</type>
@@ -79,12 +86,689 @@
           <stddev>0.01</stddev>
         </noise>
       </ray>
-      <plugin name="gazebo_ros_head_hokuyo_controller" filename="libgazebo_ros_laser.so">
-        <robotNamespace></robotNamespace>
-        <topicName>/iris/distance</topicName>
-        <frameName>distance_sensor_link</frameName>
-      </plugin>
+      <plugin filename="libgazebo_ros_range.so" name="gazebo_ros_range">
+            <topicName>/iris/distance_sensor_00</topicName>
+            <frameName>distance_sensor_link_00</frameName>
+            <gaussianNoise>0.000</gaussianNoise>
+            <alwaysOn>true</alwaysOn>
+            <updateRate>10</updateRate>
+            <radiation>infrared</radiation>
+            <fov>0.20</fov>
+            <visualize>true</visualize>
+        </plugin>
     </sensor>
+    </link>
+
+<!-- distance sensor 01 -->
+
+    <link name='distance_sensor_link_01'>
+      <inertial>
+        <pose>0 0 0 0 0 0</pose>
+        <mass>0.0000000001</mass>
+        <inertia>
+          <ixx>0.00001</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.00002</iyy>
+          <iyz>0</iyz>
+          <izz>0.00002</izz>
+        </inertia>
+      </inertial>
+      <collision name='distance_sensor_collision'>
+        <pose>0 0 -0.000001 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.05 0.05 0.1</size>
+          </box>
+        </geometry>
+        <surface>
+          <contact>
+            <ode>
+              <max_vel>100.0</max_vel>
+              <min_depth>0.001</min_depth>
+            </ode>
+          </contact>
+          <friction>
+            <ode>
+              <mu>100000.0</mu>
+              <mu2>100000.0</mu2>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+      <visual name='distance_sensor_visual'>
+        <geometry>
+          <mesh>
+            <uri>model://distance_sensor/meshes/hokuyo.dae</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/DarkGrey</name>
+          </script>
+        </material>
+      </visual>
+      <sensor type="ray" name="range_sensor">
+      <pose>0.03090 0.09511 0 0 0 1.2566</pose>
+      <visualize>true</visualize>
+      <update_rate>30</update_rate>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>2</samples>
+            <resolution>1</resolution>
+            <min_angle>-0.1745</min_angle>
+            <max_angle>0.1745</max_angle>
+          </horizontal>
+          <vertical>
+            <samples>2</samples>
+            <resolution>1</resolution>
+            <min_angle>-0.174533</min_angle>
+            <max_angle>0.174533</max_angle>
+          </vertical>
+        </scan>
+        <range>
+          <min>0.10</min>
+          <max>1</max>
+          <resolution>0.001</resolution>
+        </range>
+        <noise>
+          <type>gaussian</type>
+          <!-- Noise parameters based on published spec for Hokuyo laser
+               achieving "+-30mm" accuracy at range < 10m.  A mean of 0.0m and
+               stddev of 0.01m will put 99.7% of samples within 0.03m of the true
+               reading. -->
+          <mean>0.0</mean>
+          <stddev>0.01</stddev>
+        </noise>
+      </ray>
+      <plugin filename="libgazebo_ros_range.so" name="gazebo_ros_range">
+            <topicName>/iris/distance_sensor_01</topicName>
+            <frameName>distance_sensor_link_01</frameName>
+            <gaussianNoise>0.000</gaussianNoise>
+            <alwaysOn>true</alwaysOn>
+            <updateRate>10</updateRate>
+            <radiation>infrared</radiation>
+            <fov>0.20</fov>
+            <visualize>true</visualize>
+        </plugin>
+      </sensor>
+    </link>
+
+<!-- distance sensor 02 -->
+
+    <link name='distance_sensor_link_02'>
+      <inertial>
+        <pose>0 0 0 0 0 0</pose>
+        <mass>0.0000000001</mass>
+        <inertia>
+          <ixx>0.00001</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.00002</iyy>
+          <iyz>0</iyz>
+          <izz>0.00002</izz>
+        </inertia>
+      </inertial>
+      <collision name='distance_sensor_collision'>
+        <pose>0 0 -0.000001 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.05 0.05 0.1</size>
+          </box>
+        </geometry>
+        <surface>
+          <contact>
+            <ode>
+              <max_vel>100.0</max_vel>
+              <min_depth>0.001</min_depth>
+            </ode>
+          </contact>
+          <friction>
+            <ode>
+              <mu>100000.0</mu>
+              <mu2>100000.0</mu2>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+      <visual name='distance_sensor_visual'>
+        <geometry>
+          <mesh>
+            <uri>model://distance_sensor/meshes/hokuyo.dae</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/DarkGrey</name>
+          </script>
+        </material>
+      </visual>
+      <sensor type="ray" name="range_sensor">
+      <pose>-0.03090 0.09511 0 0 0 1.8850</pose>
+      <visualize>true</visualize>
+      <update_rate>30</update_rate>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>2</samples>
+            <resolution>1</resolution>
+            <min_angle>-0.1745</min_angle>
+            <max_angle>0.1745</max_angle>
+          </horizontal>
+          <vertical>
+            <samples>2</samples>
+            <resolution>1</resolution>
+            <min_angle>-0.174533</min_angle>
+            <max_angle>0.174533</max_angle>
+          </vertical>
+        </scan>
+        <range>
+          <min>0.10</min>
+          <max>1</max>
+          <resolution>0.001</resolution>
+        </range>
+        <noise>
+          <type>gaussian</type>
+          <!-- Noise parameters based on published spec for Hokuyo laser
+               achieving "+-30mm" accuracy at range < 10m.  A mean of 0.0m and
+               stddev of 0.01m will put 99.7% of samples within 0.03m of the true
+               reading. -->
+          <mean>0.0</mean>
+          <stddev>0.01</stddev>
+        </noise>
+      </ray>
+      <plugin filename="libgazebo_ros_range.so" name="gazebo_ros_range">
+            <topicName>/iris/distance_sensor_02</topicName>
+            <frameName>distance_sensor_link_02</frameName>
+            <gaussianNoise>0.000</gaussianNoise>
+            <alwaysOn>true</alwaysOn>
+            <updateRate>10</updateRate>
+            <radiation>infrared</radiation>
+            <fov>0.20</fov>
+            <visualize>true</visualize>
+        </plugin>
+      </sensor>
+    </link>
+
+<!-- distance sensor 03 -->
+
+    <link name='distance_sensor_link_03'>
+      <inertial>
+        <pose>0 0 0 0 0 0</pose>
+        <mass>0.0000000001</mass>
+        <inertia>
+          <ixx>0.00001</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.00002</iyy>
+          <iyz>0</iyz>
+          <izz>0.00002</izz>
+        </inertia>
+      </inertial>
+      <collision name='distance_sensor_collision'>
+        <pose>0 0 -0.000001 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.05 0.05 0.1</size>
+          </box>
+        </geometry>
+        <surface>
+          <contact>
+            <ode>
+              <max_vel>100.0</max_vel>
+              <min_depth>0.001</min_depth>
+            </ode>
+          </contact>
+          <friction>
+            <ode>
+              <mu>100000.0</mu>
+              <mu2>100000.0</mu2>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+      <visual name='distance_sensor_visual'>
+        <geometry>
+          <mesh>
+            <uri>model://distance_sensor/meshes/hokuyo.dae</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/DarkGrey</name>
+          </script>
+        </material>
+      </visual>
+      <sensor type="ray" name="range_sensor">
+      <pose>-0.08090 0.05878 0 0 0 2.5133</pose>
+      <visualize>true</visualize>
+      <update_rate>30</update_rate>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>2</samples>
+            <resolution>1</resolution>
+            <min_angle>-0.1745</min_angle>
+            <max_angle>0.1745</max_angle>
+          </horizontal>
+          <vertical>
+            <samples>2</samples>
+            <resolution>1</resolution>
+            <min_angle>-0.174533</min_angle>
+            <max_angle>0.174533</max_angle>
+          </vertical>
+        </scan>
+        <range>
+          <min>0.10</min>
+          <max>1</max>
+          <resolution>0.001</resolution>
+        </range>
+        <noise>
+          <type>gaussian</type>
+          <!-- Noise parameters based on published spec for Hokuyo laser
+               achieving "+-30mm" accuracy at range < 10m.  A mean of 0.0m and
+               stddev of 0.01m will put 99.7% of samples within 0.03m of the true
+               reading. -->
+          <mean>0.0</mean>
+          <stddev>0.01</stddev>
+        </noise>
+      </ray>
+      <plugin filename="libgazebo_ros_range.so" name="gazebo_ros_range">
+            <topicName>/iris/distance_sensor_03</topicName>
+            <frameName>distance_sensor_link_03</frameName>
+            <gaussianNoise>0.000</gaussianNoise>
+            <alwaysOn>true</alwaysOn>
+            <updateRate>10</updateRate>
+            <radiation>infrared</radiation>
+            <fov>0.20</fov>
+            <visualize>true</visualize>
+        </plugin>
+      </sensor>
+    </link>
+
+<!-- distance sensor 04 -->
+
+    <link name='distance_sensor_link_04'>
+      <inertial>
+        <pose>0 0 0 0 0 0</pose>
+        <mass>0.0000000001</mass>
+        <inertia>
+          <ixx>0.00001</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.00002</iyy>
+          <iyz>0</iyz>
+          <izz>0.00002</izz>
+        </inertia>
+      </inertial>
+      <collision name='distance_sensor_collision'>
+        <pose>0 0 -0.000001 0 0 3.14</pose>
+        <geometry>
+          <box>
+            <size>0.05 0.05 0.1</size>
+          </box>
+        </geometry>
+        <surface>
+          <contact>
+            <ode>
+              <max_vel>100.0</max_vel>
+              <min_depth>0.001</min_depth>
+            </ode>
+          </contact>
+          <friction>
+            <ode>
+              <mu>100000.0</mu>
+              <mu2>100000.0</mu2>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+      <visual name='distance_sensor_visual'>
+        <geometry>
+          <mesh>
+            <uri>model://distance_sensor/meshes/hokuyo.dae</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/DarkGrey</name>
+          </script>
+        </material>
+      </visual>
+      <sensor type="ray" name="range_sensor">
+      <pose>-0.08090 -0.05878 0 0 0 3.7699</pose>
+      <visualize>true</visualize>
+      <update_rate>30</update_rate>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>2</samples>
+            <resolution>1</resolution>
+            <min_angle>-0.1745</min_angle>
+            <max_angle>0.1745</max_angle>
+          </horizontal>
+          <vertical>
+            <samples>2</samples>
+            <resolution>1</resolution>
+            <min_angle>-0.174533</min_angle>
+            <max_angle>0.174533</max_angle>
+          </vertical>
+        </scan>
+        <range>
+          <min>0.10</min>
+          <max>1</max>
+          <resolution>0.001</resolution>
+        </range>
+        <noise>
+          <type>gaussian</type>
+          <!-- Noise parameters based on published spec for Hokuyo laser
+               achieving "+-30mm" accuracy at range < 10m.  A mean of 0.0m and
+               stddev of 0.01m will put 99.7% of samples within 0.03m of the true
+               reading. -->
+          <mean>0.0</mean>
+          <stddev>0.01</stddev>
+        </noise>
+      </ray>
+      <plugin filename="libgazebo_ros_range.so" name="gazebo_ros_range">
+            <topicName>/iris/distance_sensor_04</topicName>
+            <frameName>distance_sensor_link_04</frameName>
+            <gaussianNoise>0.000</gaussianNoise>
+            <alwaysOn>true</alwaysOn>
+            <updateRate>10</updateRate>
+            <radiation>infrared</radiation>
+            <fov>0.20</fov>
+            <visualize>true</visualize>
+        </plugin>
+      </sensor>
+    </link>
+
+<!-- distance sensor 05 -->
+
+    <link name='distance_sensor_link_05'>
+      <inertial>
+        <pose>0 0 0 0 0 0</pose>
+        <mass>0.0000000001</mass>
+        <inertia>
+          <ixx>0.00001</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.00002</iyy>
+          <iyz>0</iyz>
+          <izz>0.00002</izz>
+        </inertia>
+      </inertial>
+      <collision name='distance_sensor_collision'>
+        <pose>0 0 -0.000001 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.05 0.05 0.1</size>
+          </box>
+        </geometry>
+        <surface>
+          <contact>
+            <ode>
+              <max_vel>100.0</max_vel>
+              <min_depth>0.001</min_depth>
+            </ode>
+          </contact>
+          <friction>
+            <ode>
+              <mu>100000.0</mu>
+              <mu2>100000.0</mu2>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+      <visual name='distance_sensor_visual'>
+        <geometry>
+          <mesh>
+            <uri>model://distance_sensor/meshes/hokuyo.dae</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/DarkGrey</name>
+          </script>
+        </material>
+      </visual>
+      <sensor type="ray" name="range_sensor">
+      <pose>-0.03090 -0.09511 0 0 0 4.3982</pose>
+      <visualize>true</visualize>
+      <update_rate>30</update_rate>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>2</samples>
+            <resolution>1</resolution>
+            <min_angle>-0.1745</min_angle>
+            <max_angle>0.1745</max_angle>
+          </horizontal>
+          <vertical>
+            <samples>2</samples>
+            <resolution>1</resolution>
+            <min_angle>-0.174533</min_angle>
+            <max_angle>0.174533</max_angle>
+          </vertical>
+        </scan>
+        <range>
+          <min>0.10</min>
+          <max>1</max>
+          <resolution>0.001</resolution>
+        </range>
+        <noise>
+          <type>gaussian</type>
+          <!-- Noise parameters based on published spec for Hokuyo laser
+               achieving "+-30mm" accuracy at range < 10m.  A mean of 0.0m and
+               stddev of 0.01m will put 99.7% of samples within 0.03m of the true
+               reading. -->
+          <mean>0.0</mean>
+          <stddev>0.01</stddev>
+        </noise>
+      </ray>
+      <plugin filename="libgazebo_ros_range.so" name="gazebo_ros_range">
+            <topicName>/iris/distance_sensor_05</topicName>
+            <frameName>distance_sensor_link_05</frameName>
+            <gaussianNoise>0.000</gaussianNoise>
+            <alwaysOn>true</alwaysOn>
+            <updateRate>10</updateRate>
+            <radiation>infrared</radiation>
+            <fov>0.20</fov>
+            <visualize>true</visualize>
+        </plugin>
+      </sensor>
+    </link>
+
+<!-- distance sensor 06 -->
+
+    <link name='distance_sensor_link_06'>
+      <inertial>
+        <pose>0 0 0 0 0 0</pose>
+        <mass>0.0000000001</mass>
+        <inertia>
+          <ixx>0.00001</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.00002</iyy>
+          <iyz>0</iyz>
+          <izz>0.00002</izz>
+        </inertia>
+      </inertial>
+      <collision name='distance_sensor_collision'>
+        <pose>0 0 -0.000001 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.05 0.05 0.1</size>
+          </box>
+        </geometry>
+        <surface>
+          <contact>
+            <ode>
+              <max_vel>100.0</max_vel>
+              <min_depth>0.001</min_depth>
+            </ode>
+          </contact>
+          <friction>
+            <ode>
+              <mu>100000.0</mu>
+              <mu2>100000.0</mu2>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+      <visual name='distance_sensor_visual'>
+        <geometry>
+          <mesh>
+            <uri>model://distance_sensor/meshes/hokuyo.dae</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/DarkGrey</name>
+          </script>
+        </material>
+      </visual>
+      <sensor type="ray" name="range_sensor">
+      <pose>0.03090 -0.09511 0 0 0 5.0265</pose>
+      <visualize>true</visualize>
+      <update_rate>30</update_rate>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>2</samples>
+            <resolution>1</resolution>
+            <min_angle>-0.1745</min_angle>
+            <max_angle>0.1745</max_angle>
+          </horizontal>
+          <vertical>
+            <samples>2</samples>
+            <resolution>1</resolution>
+            <min_angle>-0.174533</min_angle>
+            <max_angle>0.174533</max_angle>
+          </vertical>
+        </scan>
+        <range>
+          <min>0.10</min>
+          <max>1</max>
+          <resolution>0.001</resolution>
+        </range>
+        <noise>
+          <type>gaussian</type>
+          <!-- Noise parameters based on published spec for Hokuyo laser
+               achieving "+-30mm" accuracy at range < 10m.  A mean of 0.0m and
+               stddev of 0.01m will put 99.7% of samples within 0.03m of the true
+               reading. -->
+          <mean>0.0</mean>
+          <stddev>0.01</stddev>
+        </noise>
+      </ray>
+      <plugin filename="libgazebo_ros_range.so" name="gazebo_ros_range">
+            <topicName>/iris/distance_sensor_06</topicName>
+            <frameName>distance_sensor_link_06</frameName>
+            <gaussianNoise>0.000</gaussianNoise>
+            <alwaysOn>true</alwaysOn>
+            <updateRate>10</updateRate>
+            <radiation>infrared</radiation>
+            <fov>0.20</fov>
+            <visualize>true</visualize>
+        </plugin>
+      </sensor>
+    </link>
+
+<!-- distance sensor 07 -->
+
+    <link name='distance_sensor_link_07'>
+      <inertial>
+        <pose>0 0 0 0 0 0</pose>
+        <mass>0.0000000001</mass>
+        <inertia>
+          <ixx>0.00001</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.00002</iyy>
+          <iyz>0</iyz>
+          <izz>0.00002</izz>
+        </inertia>
+      </inertial>
+      <collision name='distance_sensor_collision'>
+        <pose>0 0 -0.000001 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.05 0.05 0.1</size>
+          </box>
+        </geometry>
+        <surface>
+          <contact>
+            <ode>
+              <max_vel>100.0</max_vel>
+              <min_depth>0.001</min_depth>
+            </ode>
+          </contact>
+          <friction>
+            <ode>
+              <mu>100000.0</mu>
+              <mu2>100000.0</mu2>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+      <visual name='distance_sensor_visual'>
+        <geometry>
+          <mesh>
+            <uri>model://distance_sensor/meshes/hokuyo.dae</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/DarkGrey</name>
+          </script>
+        </material>
+      </visual>
+      <sensor type="ray" name="range_sensor">
+      <pose>0.08090 -0.05878 0 0 0 5.6549</pose>
+      <visualize>true</visualize>
+      <update_rate>30</update_rate>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>2</samples>
+            <resolution>1</resolution>
+            <min_angle>-0.1745</min_angle>
+            <max_angle>0.1745</max_angle>
+          </horizontal>
+          <vertical>
+            <samples>2</samples>
+            <resolution>1</resolution>
+            <min_angle>-0.174533</min_angle>
+            <max_angle>0.174533</max_angle>
+          </vertical>
+        </scan>
+        <range>
+          <min>0.10</min>
+          <max>1</max>
+          <resolution>0.001</resolution>
+        </range>
+        <noise>
+          <type>gaussian</type>
+          <!-- Noise parameters based on published spec for Hokuyo laser
+               achieving "+-30mm" accuracy at range < 10m.  A mean of 0.0m and
+               stddev of 0.01m will put 99.7% of samples within 0.03m of the true
+               reading. -->
+          <mean>0.0</mean>
+          <stddev>0.01</stddev>
+        </noise>
+      </ray>
+      <plugin filename="libgazebo_ros_range.so" name="gazebo_ros_range">
+            <topicName>/iris/distance_sensor_07</topicName>
+            <frameName>distance_sensor_link_07</frameName>
+            <gaussianNoise>0.000</gaussianNoise>
+            <alwaysOn>true</alwaysOn>
+            <updateRate>10</updateRate>
+            <radiation>infrared</radiation>
+            <fov>0.20</fov>
+            <visualize>true</visualize>
+        </plugin>
+      </sensor>
     </link>
 
     <static>0</static>

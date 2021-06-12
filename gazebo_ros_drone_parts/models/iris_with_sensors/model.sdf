@@ -5,14 +5,101 @@
       <uri>model://iris_with_ardupilot</uri>
     </include>
 
+<!-- distance sensor -->
+
     <include>
+      <name>distance_sensor</name>
       <uri>model://distance_sensor</uri>
-      <pose>0 -0.0 0.25 0 0 0</pose>
+      <pose>0 -0.0 0.28 0 0 0</pose>
     </include>
 
-    <joint name="iris_sensor_mount" type="revolute">
+    <joint name="iris_distance_sensor_00" type="revolute">
       <parent>iris_demo::iris::base_link</parent>
-      <child>distance_sensor::distance_sensor_link</child>
+      <child>distance_sensor::distance_sensor_link_00</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>0</lower>
+          <upper>0</upper>
+        </limit>
+      </axis>
+    </joint>
+
+    <joint name="iris_distance_sensor_01" type="revolute">
+      <parent>iris_demo::iris::base_link</parent>
+      <child>distance_sensor::distance_sensor_link_01</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>0</lower>
+          <upper>0</upper>
+        </limit>
+      </axis>
+    </joint>
+
+    <joint name="iris_distance_sensor_02" type="revolute">
+      <parent>iris_demo::iris::base_link</parent>
+      <child>distance_sensor::distance_sensor_link_02</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>0</lower>
+          <upper>0</upper>
+        </limit>
+      </axis>
+    </joint>
+
+    <joint name="iris_distance_sensor_03" type="revolute">
+      <parent>iris_demo::iris::base_link</parent>
+      <child>distance_sensor::distance_sensor_link_03</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>0</lower>
+          <upper>0</upper>
+        </limit>
+      </axis>
+    </joint>
+
+    <joint name="iris_distance_sensor_04" type="revolute">
+      <parent>iris_demo::iris::base_link</parent>
+      <child>distance_sensor::distance_sensor_link_04</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>0</lower>
+          <upper>0</upper>
+        </limit>
+      </axis>
+    </joint>
+
+    <joint name="iris_distance_sensor_05" type="revolute">
+      <parent>iris_demo::iris::base_link</parent>
+      <child>distance_sensor::distance_sensor_link_05</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>0</lower>
+          <upper>0</upper>
+        </limit>
+      </axis>
+    </joint>
+
+    <joint name="iris_distance_sensor_06" type="revolute">
+      <parent>iris_demo::iris::base_link</parent>
+      <child>distance_sensor::distance_sensor_link_06</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>0</lower>
+          <upper>0</upper>
+        </limit>
+      </axis>
+    </joint>
+
+    <joint name="iris_distance_sensor_07" type="revolute">
+      <parent>iris_demo::iris::base_link</parent>
+      <child>distance_sensor::distance_sensor_link_07</child>
       <axis>
         <xyz>0 0 1</xyz>
         <limit>
