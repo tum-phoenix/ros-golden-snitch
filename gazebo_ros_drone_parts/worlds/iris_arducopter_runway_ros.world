@@ -90,5 +90,12 @@
       </include>
     </model>
 
+    <model name="human">
+      <include>
+        <uri>model://human</uri>
+      </include>
+    </model>
+
+
   </world>
 </sdf>

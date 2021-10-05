@@ -5,6 +5,15 @@
       <uri>model://iris_with_ardupilot</uri>
     </include>
 
+    <!-- publish ground truth position -->
+    <plugin name="ground_truth" filename="libgazebo_ros_p3d.so">
+      <frameName>map</frameName>
+      <bodyName>iris_demo::iris::base_link</bodyName>
+      <topicName>iris/ground_truth</topicName>
+      <updateRate>30.0</updateRate>
+    </plugin>
+
+
 <!-- distance sensor -->
 
     <include>

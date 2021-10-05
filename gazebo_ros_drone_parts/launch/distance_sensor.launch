@@ -21,4 +21,9 @@
   <node pkg="gazebo_ros_drone_parts" name="distance_sensor_msgs_publisher" type="distance_sensor_msgs_publisher.py" output="screen"> 
   </node>
 
+    <!--Node to compute relative position: drone-human -->
+    <node pkg="gazebo_ros_drone_parts" 
+        name="distance_calculator" 
+        type="distance_calculation_human_drone.py"/>
+
 </launch>
