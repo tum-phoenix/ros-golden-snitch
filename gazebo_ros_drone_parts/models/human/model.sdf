@@ -2,7 +2,7 @@
 <sdf version='1.6'>
   <model name="human">
     <pose>2 2 0.9 0 0 0</pose>
-    <static>true</static>
+    <!-- <static>true</static> -->
     <link name="human_link">
       <inertial>
         <mass>1.0</mass>
@@ -41,5 +41,36 @@
       <updateRate>30.0</updateRate>
     </plugin>
 
+  <!-- root link, on the ground just below the model origin -->
+  <link name="base_footprint">
+   <visual name="visual">
+      <pose>0 0 0 0 0 0</pose>
+      <geometry>
+          <box>
+            <size>0.5 0.5 0.5</size>
+          </box>
+        </geometry>
+    </visual>
+  </link>
+
+  <joint name="base_link_joint" type="fixed">
+    <pose>0 0 1.25 0 0 0</pose>
+    <parent>base_footprint</parent>
+    <child>human_link</child>
+  </joint>
+
+    <!-- move human -->
+    <plugin name="object_controller" filename="libgazebo_ros_planar_move.so">
+      <commandTopic>cmd_vel</commandTopic>
+      <odometryTopic>odom</odometryTopic>
+      <odometryFrame>odom</odometryFrame>
+      <odometryRate>20.0</odometryRate>
+      <robotBaseFrame>base_footprint</robotBaseFrame>
+    </plugin>
+
   </model>
 </sdf>
+
+
+
+

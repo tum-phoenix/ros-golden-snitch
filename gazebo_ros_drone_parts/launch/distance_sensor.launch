@@ -26,4 +26,9 @@
         name="distance_calculator" 
         type="distance_calculation_human_drone.py"/>
 
+    <!--Node to move human with keyboard -->
+    <node pkg="teleop_twist_keyboard" 
+        name="teleop_twist_keyboard" 
+        type="teleop_twist_keyboard.py"/>
+
 </launch>
